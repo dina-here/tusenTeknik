@@ -1,0 +1,195 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum IngressStatus {
+  RECEIVED
+  PROCESSING
+  ACCEPTED
+  REJECTED
+}
+
+enum RecommendationType {
+  SERVICE
+  REPLACE
+  INSPECT
+}
+
+enum RecommendationStatus {
+  NEW
+  SENT
+  ACK
+}
+
+model Partner {
+  id        String   @id @default(cuid())
+  name      String
+  apiKey    String   @unique
+  createdAt DateTime @default(now())
+  customers Customer[]
+}
+
+model Customer {
+  id        String   @id @default(cuid())
+  name      String
+  partnerId String?
+  partner   Partner? @relation(fields: [partnerId], references: [id])
+
+  sites     Site[]
+  contacts  ContactPerson[]
+  createdAt DateTime @default(now())
+}
+
+model Site {
+  id         String   @id @default(cuid())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id])
+
+  name       String
+  address    String?
+  devices    Device[]
+  createdAt  DateTime @default(now())
+}
+
+model ContactPerson {
+  id         String   @id @default(cuid())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id])
+
+  name       String
+  email      String?
+  phone      String?
+  role       String?
+
+  createdAt  DateTime @default(now())
+}
+
+model ProductCategory {
+  id        String @id @default(cuid())
+  name      String @unique
+  models    ProductModel[]
+}
+
+model ProductModel {
+  id                 String @id @default(cuid())
+  categoryId         String
+  category           ProductCategory @relation(fields: [categoryId], references: [id])
+
+  sku                String @unique
+  displayName        String
+  expectedLifetimeMonths Int
+  nominalPowerW      Int?
+  batteryCapacityAh  Int?
+  notes              String?
+
+  devices            Device[]
+}
+
+model Device {
+  id           String @id @default(cuid())
+  serialNumber String @unique
+  qrCodeId     String @unique
+
+  modelId      String
+  model        ProductModel @relation(fields: [modelId], references: [id])
+
+  siteId       String?
+  site         Site? @relation(fields: [siteId], references: [id])
+
+  installDate  DateTime?
+  status       String @default("ACTIVE")
+
+  serviceHistory    ServiceHistory[]
+  telemetryRaw      TelemetryRaw[]
+  healthSnapshots   DeviceHealthSnapshot[]
+  recommendations   Recommendation[]
+
+  createdAt    DateTime @default(now())
+}
+
+model ServiceHistory {
+  id          String   @id @default(cuid())
+  deviceId    String
+  device      Device   @relation(fields: [deviceId], references: [id])
+  serviceDate DateTime
+  action      String
+  notes       String?
+}
+
+model IngressEvent {
+  id        String   @id @default(cuid())
+
+  /// Idempotensnyckel (UNIQUE). Samma event kan skickas flera gånger utan dubletter.
+  eventId   String   @unique
+
+  source    String
+  deviceRef String
+  payload   Json
+  contact   Json?
+
+  status    IngressStatus @default(RECEIVED)
+  validationErrors Json?
+  receivedAt DateTime @default(now())
+  processedAt DateTime?
+}
+
+model Recommendation {
+  id        String @id @default(cuid())
+  deviceId  String
+  device    Device @relation(fields: [deviceId], references: [id])
+
+  type      RecommendationType
+  reason    String
+  status    RecommendationStatus @default(NEW)
+
+  createdAt DateTime @default(now())
+  sentAt    DateTime?
+}
+
+model TelemetryRaw {
+  id        String   @id @default(cuid())
+  deviceId  String
+  device    Device   @relation(fields: [deviceId], references: [id])
+
+  timestamp DateTime
+  metrics   Json
+
+  createdAt DateTime @default(now())
+}
+
+model DeviceHealthSnapshot {
+  id        String   @id @default(cuid())
+  deviceId  String
+  device    Device   @relation(fields: [deviceId], references: [id])
+
+  timestamp DateTime @default(now())
+  health    String
+  score     Int
+  reasons   Json
+}
+
+model SizingRequest {
+  id          String   @id @default(cuid())
+  customerId  String?
+  inputs      Json
+  createdAt   DateTime @default(now())
+
+  result      SizingResult?
+}
+
+model SizingResult {
+  id                 String @id @default(cuid())
+  sizingRequestId    String @unique
+  request            SizingRequest @relation(fields: [sizingRequestId], references: [id])
+
+  recommendedModelSku String
+  batteryCapacityAh   Int
+  safetyMargin        Float
+  algorithmVersion    String
+  createdAt           DateTime @default(now())
+}

@@ -1,0 +1,104 @@
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
+
+/**
+ * Seedar demo-data så att admin-vyerna känns “på riktigt”.
+ * Kategorierna är inspirerade av menyn på milleteknik.se (dummy, ej scraping).
+ */
+async function main() {
+  const categories = [
+    "Produktnyheter",
+    "Webbshop",
+    "ECO-serien",
+    "NEO-serien",
+    "NOVA-serien",
+    "EN54-serien",
+    "PoE",
+    "Utomhus strömförsörjning",
+    "Nätaggregat",
+    "Tillbehör och tillval",
+    "Batteriboxar och batterihyllor",
+    "Batterier",
+    "SINUS UPS"
+  ];
+
+  for (const name of categories) {
+    await prisma.productCategory.upsert({
+      where: { name },
+      create: { name },
+      update: {}
+    });
+  }
+
+  const eco = await prisma.productCategory.findUnique({ where: { name: "ECO-serien" } });
+  const neo = await prisma.productCategory.findUnique({ where: { name: "NEO-serien" } });
+  const en54 = await prisma.productCategory.findUnique({ where: { name: "EN54-serien" } });
+  const sinus = await prisma.productCategory.findUnique({ where: { name: "SINUS UPS" } });
+
+  if (!eco || !neo || !en54 || !sinus) throw new Error("Seed: kategorier saknas.");
+
+  const models = [
+    { categoryId: eco.id, sku: "MT-ECO-250", displayName: "ECO 250", expectedLifetimeMonths: 72, nominalPowerW: 250, batteryCapacityAh: 45 },
+    { categoryId: neo.id, sku: "MT-NEO-500", displayName: "NEO 500", expectedLifetimeMonths: 84, nominalPowerW: 500, batteryCapacityAh: 65 },
+    { categoryId: en54.id, sku: "MT-EN54-300", displayName: "EN54 300", expectedLifetimeMonths: 60, nominalPowerW: 300, batteryCapacityAh: 55, notes: "Demo: anpassad för EN54-miljöer." },
+    { categoryId: sinus.id, sku: "MT-SINUS-UPS-800", displayName: "SINUS UPS 800", expectedLifetimeMonths: 72, nominalPowerW: 800, batteryCapacityAh: 80 }
+  ];
+
+  for (const m of models) {
+    await prisma.productModel.upsert({
+      where: { sku: m.sku },
+      create: m,
+      update: m
+    });
+  }
+
+  // Partner + kund + site + device
+  const partner = await prisma.partner.upsert({
+    where: { apiKey: "demo-partner-key" },
+    create: { name: "DemoPartner AB", apiKey: "demo-partner-key" },
+    update: {}
+  });
+
+  const customer = await prisma.customer.upsert({
+    where: { name: "Brf Solgläntan" },
+    create: { name: "Brf Solgläntan", partnerId: partner.id },
+    update: {}
+  });
+
+  const site = await prisma.site.upsert({
+    where: { id: "site-demo-1" },
+    create: { id: "site-demo-1", customerId: customer.id, name: "Källare - Elrum", address: "Solgatan 1, 123 45 Stockholm" },
+    update: {}
+  });
+
+  await prisma.contactPerson.upsert({
+    where: { id: "contact-demo-1" },
+    create: { id: "contact-demo-1", customerId: customer.id, name: "Fastighetsskötare", phone: "070-000 00 00", email: "skotare@solglantan.se", role: "Drift" },
+    update: {}
+  });
+
+  const neo500 = await prisma.productModel.findUnique({ where: { sku: "MT-NEO-500" } });
+  if (!neo500) throw new Error("Seed: model saknas.");
+
+  await prisma.device.upsert({
+    where: { serialNumber: "SN-NEO-0001" },
+    create: {
+      serialNumber: "SN-NEO-0001",
+      qrCodeId: "QR-NEO-0001",
+      modelId: neo500.id,
+      siteId: site.id,
+      installDate: new Date("2018-02-01"),
+      status: "ACTIVE"
+    },
+    update: {}
+  });
+}
+
+main()
+  .then(() => prisma.$disconnect())
+  .catch(async (e) => {
+    console.error(e);
+    await prisma.$disconnect();
+    process.exit(1);
+  });
