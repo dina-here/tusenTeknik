@@ -1,4 +1,4 @@
-# Milleteknik Demo Platform
+# TusenTeknik Demo Platform
 
 En fullstack-demo som simulerar ett modernt backend-system för hantering av batteribackuper, fält-rapportering (PowerWatch), dimensionering och realtidsdata.
 
@@ -179,4 +179,4 @@ Detta är inte en produktionslösning, utan en arkitekturell demo med fokus på:
 
 # 👤 Author
 
-Byggt som arkitekturell demo för Milleteknik.
+Byggt som arkitekturell demo för TusenTeknik.
