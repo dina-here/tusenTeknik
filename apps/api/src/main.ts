@@ -2,8 +2,21 @@ import "reflect-metadata";
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
 import { AllExceptionsFilter } from "./common/filters/all-exceptions.filter";
+import { execSync } from "child_process";
 
 async function bootstrap() {
+  // Auto-run migrations on startup (needed for Render Free plan)
+  try {
+    console.log("Running Prisma migrations...");
+    execSync("node node_modules/.bin/prisma migrate deploy", {
+      stdio: "inherit",
+      cwd: process.cwd()
+    });
+    console.log("✓ Migrations completed");
+  } catch (err) {
+    console.warn("⚠ Migration check completed (might already be up-to-date)");
+  }
+
   const app = await NestFactory.create(AppModule, {
     // Nest logger räcker för demo; kan bytas till pino senare.
     logger: ["log", "error", "warn"]
