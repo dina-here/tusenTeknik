@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { apiGet, apiPost } from "./api/client";
+import { apiGet, apiPost, API_BASE } from "./api/client";
 
 type IngressEvent = { id: string; deviceRef: string; status: string; receivedAt: string; eventId: string };
 type Device = {
@@ -46,12 +46,12 @@ export function App() {
 function Topbar({ tab, setTab }: { tab: string; setTab: (t: any) => void }) {
   return (
     <div className="border-b border-slate-200 bg-white">
-      <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div className="max-w-6xl mx-auto px-4 py-4 sm:px-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="text-lg font-semibold text-slate-900">PowerAdmin (demo)</div>
           <div className="text-sm text-slate-600">Inbox, Devices, Recommendations, Telemetry</div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <NavButton active={tab === "inbox"} onClick={() => setTab("inbox")}>Inbox</NavButton>
           <NavButton active={tab === "devices"} onClick={() => setTab("devices")}>Devices</NavButton>
           <NavButton active={tab === "recommendations"} onClick={() => setTab("recommendations")}>Recommendations</NavButton>
@@ -275,7 +275,7 @@ function SizingTool() {
     <Page title="Sizing" subtitle="Enkel dimensionering (demo).">
       {err && <ErrorBox text={err} />}
       <div className="card p-4 space-y-4">
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <Field label="Load (kW)">
             <input className="input" value={load} onChange={(e) => setLoad(e.target.value)} />
           </Field>
@@ -299,7 +299,7 @@ function SizingTool() {
 
 function Page({ title, subtitle, children }: any) {
   return (
-    <div className="max-w-6xl mx-auto p-6">
+    <div className="max-w-6xl mx-auto p-4 sm:p-6">
       <h1 className="text-2xl font-semibold text-slate-900">{title}</h1>
       <p className="text-slate-600 mt-1">{subtitle}</p>
       <div className="mt-6">{children}</div>
@@ -318,12 +318,12 @@ function Field({ label, children }: any) {
 
 function CardTable({ headers, rows }: { headers: string[]; rows: any[][] }) {
   return (
-    <div className="card overflow-hidden">
-      <table className="w-full text-sm">
+    <div className="card overflow-x-auto">
+      <table className="min-w-[560px] sm:min-w-[720px] w-full text-xs sm:text-sm">
         <thead className="bg-slate-50 text-slate-700">
           <tr>
             {headers.map((h) => (
-              <th key={h} className="text-left font-medium p-3">{h}</th>
+              <th key={h} className="text-left font-medium p-3 whitespace-nowrap">{h}</th>
             ))}
           </tr>
         </thead>
@@ -331,7 +331,7 @@ function CardTable({ headers, rows }: { headers: string[]; rows: any[][] }) {
           {rows.map((r, idx) => (
             <tr key={idx} className="border-t border-slate-100">
               {r.map((cell, cidx) => (
-                <td key={cidx} className="p-3">{cell}</td>
+                <td key={cidx} className="p-3 whitespace-nowrap">{cell}</td>
               ))}
             </tr>
           ))}
@@ -342,9 +342,15 @@ function CardTable({ headers, rows }: { headers: string[]; rows: any[][] }) {
 }
 
 function ErrorBox({ text }: { text: string }) {
+  const isFetchError = text.toLowerCase().includes("failed to fetch");
   return (
-    <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 text-red-800">
-      {text}
+    <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-amber-900">
+      <div>{text}</div>
+      {isFetchError && (
+        <div className="mt-1 text-xs text-amber-900/80">
+          Kan inte nå API: {API_BASE}. Kontrollera att API:t kör och att VITE_API_BASE är rätt.
+        </div>
+      )}
     </div>
   );
 }

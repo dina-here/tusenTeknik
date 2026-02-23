@@ -51,7 +51,7 @@ export function App() {
 
   return (
     <div className="min-h-screen">
-      <div className="max-w-3xl mx-auto p-6">
+      <div className="max-w-3xl mx-auto p-4 sm:p-6">
         <h1 className="text-2xl font-semibold">PowerWatch (demo)</h1>
         <p className="text-slate-600 mt-1">
           Web-PWA som simulerar Android-app: QR/serial + offline-kö + batch-synk.
@@ -68,7 +68,7 @@ export function App() {
               value={note} onChange={(e) => setNote(e.target.value)} />
           </Field>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Field label="Installationsår">
               <input
                 className="input"
@@ -87,7 +87,7 @@ export function App() {
             </Field>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Field label="Kontakt - namn">
               <input className="input"
                 value={name} onChange={(e) => setName(e.target.value)} />

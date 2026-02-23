@@ -2,7 +2,7 @@
   "name": "@milleteknik/api",
   "private": true,
   "scripts": {
-    "dev": "nest start --watch",
+    "dev": "dotenv -e ../../.env -e ../../prisma/.env.local -- nest start --watch",
     "build": "nest build",
     "start": "node dist/main.js",
     "lint": "eslint ."
