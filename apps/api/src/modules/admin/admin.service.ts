@@ -17,6 +17,7 @@ export class AdminService {
       include: {
         model: true,
         site: { include: { customer: true } },
+        serviceHistory: { orderBy: { serviceDate: "desc" }, take: 1 },
         recommendations: { orderBy: { createdAt: "desc" }, take: 3 },
         healthSnapshots: { orderBy: { timestamp: "desc" }, take: 1 }
       },

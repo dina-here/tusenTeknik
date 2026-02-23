@@ -9,5 +9,8 @@
     "prisma:generate": "pnpm --dir prisma prisma:generate",
     "prisma:migrate": "pnpm --dir prisma prisma:migrate",
     "prisma:seed": "pnpm --dir prisma prisma:seed"
+  },
+  "devDependencies": {
+    "dotenv-cli": "^11.0.0"
   }
 }

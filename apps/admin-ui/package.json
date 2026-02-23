@@ -2,7 +2,7 @@
   "name": "@milleteknik/admin-ui",
   "private": true,
   "scripts": {
-    "dev": "vite --port 5173",
+    "dev": "vite --host --port 5173",
     "build": "vite build",
     "lint": "eslint ."
   },
@@ -22,3 +22,4 @@
     "vite": "^5.4.1"
   }
 }
+

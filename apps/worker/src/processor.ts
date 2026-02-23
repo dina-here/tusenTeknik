@@ -34,6 +34,38 @@ export async function processIngressEvent(prisma: PrismaClient, ingressId: strin
     });
   }
 
+  const payload = (evt.payload ?? {}) as { installYear?: number; lastServiceYear?: number };
+  const installYear = Number.isFinite(payload.installYear) ? payload.installYear : undefined;
+  const lastServiceYear = Number.isFinite(payload.lastServiceYear) ? payload.lastServiceYear : undefined;
+
+  if (installYear && !device.installDate) {
+    await prisma.device.update({
+      where: { id: device.id },
+      data: { installDate: new Date(installYear, 0, 1) }
+    });
+  }
+
+  if (lastServiceYear) {
+    const from = new Date(lastServiceYear, 0, 1);
+    const to = new Date(lastServiceYear + 1, 0, 1);
+    const exists = await prisma.serviceHistory.findFirst({
+      where: {
+        deviceId: device.id,
+        serviceDate: { gte: from, lt: to }
+      }
+    });
+    if (!exists) {
+      await prisma.serviceHistory.create({
+        data: {
+          deviceId: device.id,
+          serviceDate: from,
+          action: "SERVICE",
+          notes: "Serviceår rapporterat från PowerWatch"
+        }
+      });
+    }
+  }
+
   const recs = await buildRecommendations(prisma, device.id);
   for (const r of recs) {
     await prisma.recommendation.create({

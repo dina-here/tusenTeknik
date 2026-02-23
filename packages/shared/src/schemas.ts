@@ -22,7 +22,9 @@ export const PowerWatchEventSchema = z.object({
     .object({
       note: z.string().optional(),
       photoUrl: z.string().url().optional(),
-      reportedProblem: z.string().optional()
+      reportedProblem: z.string().optional(),
+      installYear: z.number().int().optional(),
+      lastServiceYear: z.number().int().optional()
     })
     .passthrough(),
   contact: ContactSchema.optional()

@@ -5,6 +5,8 @@ import { postBatch } from "./api";
 export function App() {
   const [deviceRef, setDeviceRef] = useState("QR-NEO-0001");
   const [note, setNote] = useState("");
+  const [installYear, setInstallYear] = useState<string>("");
+  const [lastServiceYear, setLastServiceYear] = useState<string>("");
   const [name, setName] = useState("Fastighetsskötare");
   const [email, setEmail] = useState("skotare@solglantan.se");
   const [status, setStatus] = useState<string>("");
@@ -12,12 +14,18 @@ export function App() {
   const queue = useMemo(() => loadQueue(), [status]);
 
   async function addToQueue() {
+    const parsedInstallYear = installYear.trim() ? Number(installYear) : undefined;
+    const parsedServiceYear = lastServiceYear.trim() ? Number(lastServiceYear) : undefined;
     const evt: OfflineEvent = {
       eventId: crypto.randomUUID(),
       source: "POWERWATCH",
       deviceRef: deviceRef.trim(),
       timestamp: new Date().toISOString(),
-      payload: { note },
+      payload: {
+        note,
+        installYear: Number.isFinite(parsedInstallYear) ? parsedInstallYear : undefined,
+        lastServiceYear: Number.isFinite(parsedServiceYear) ? parsedServiceYear : undefined
+      },
       contact: { name, email }
     };
     enqueue(evt);
@@ -53,6 +61,25 @@ export function App() {
             <input className="w-full rounded-xl border border-slate-200 px-3 py-2"
               value={note} onChange={(e) => setNote(e.target.value)} />
           </Field>
+
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Installationsår">
+              <input
+                className="w-full rounded-xl border border-slate-200 px-3 py-2"
+                placeholder="t.ex. 2020"
+                value={installYear}
+                onChange={(e) => setInstallYear(e.target.value)}
+              />
+            </Field>
+            <Field label="Senaste serviceår">
+              <input
+                className="w-full rounded-xl border border-slate-200 px-3 py-2"
+                placeholder="t.ex. 2023"
+                value={lastServiceYear}
+                onChange={(e) => setLastServiceYear(e.target.value)}
+              />
+            </Field>
+          </div>
 
           <div className="grid grid-cols-2 gap-3">
             <Field label="Kontakt - namn">

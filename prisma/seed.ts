@@ -60,11 +60,20 @@ async function main() {
     update: {}
   });
 
-  const customer = await prisma.customer.upsert({
-    where: { name: "Brf Solgläntan" },
-    create: { name: "Brf Solgläntan", partnerId: partner.id },
-    update: {}
-  });
+// Kund: name är inte unique i schema, därför kan vi inte använda upsert på name.
+// Vi gör istället: findFirst -> update/create.
+const existingCustomer = await prisma.customer.findFirst({
+  where: { name: "Brf Solgläntan" }
+});
+
+const customer = existingCustomer
+  ? await prisma.customer.update({
+      where: { id: existingCustomer.id },
+      data: { partnerId: partner.id }
+    })
+  : await prisma.customer.create({
+      data: { name: "Brf Solgläntan", partnerId: partner.id }
+    });
 
   const site = await prisma.site.upsert({
     where: { id: "site-demo-1" },

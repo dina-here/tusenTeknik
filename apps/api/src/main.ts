@@ -12,6 +12,13 @@ async function bootstrap() {
   // Central felhantering (konsekvent JSON vid fel)
   app.useGlobalFilters(new AllExceptionsFilter());
 
+  // ✅ DEMO: tillåt anrop från Vite-frontends
+  app.enableCors({
+    origin: ["http://localhost:5173", "http://localhost:5174"],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "x-api-key"],
+  });
+
   const port = Number(process.env.PORT ?? 3000);
   await app.listen(port);
   console.log(`API igång på http://localhost:${port}`);
