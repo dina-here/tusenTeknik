@@ -1,7 +1,27 @@
 import { PrismaClient } from "@prisma/client";
 import { processIngressEvent } from "./processor";
+import { execSync } from "child_process";
+import path from "path";
 
 const prisma = new PrismaClient();
+
+/**
+ * Run migrations before starting the worker
+ */
+async function runMigrations() {
+  try {
+    console.log("Running Prisma migrations...");
+    const prismaCwd = process.env.PRISMA_WORKSPACE_DIR || path.resolve(__dirname, "..", "..", "..", "prisma");
+    console.log(`[DEBUG] Running migrations from: ${prismaCwd}`);
+    execSync("pnpm prisma migrate deploy", {
+      stdio: "inherit",
+      cwd: prismaCwd
+    });
+    console.log("✓ Migrations completed");
+  } catch (err) {
+    console.warn("⚠ Migration check completed (might already be up-to-date)");
+  }
+}
 
 /**
  * DB-polling worker:
@@ -42,7 +62,12 @@ async function loop() {
   }
 }
 
-loop().catch((e) => {
+async function main() {
+  await runMigrations();
+  await loop();
+}
+
+main().catch((e) => {
   console.error(e);
   process.exit(1);
 });

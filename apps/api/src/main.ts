@@ -10,9 +10,11 @@ async function bootstrap() {
   try {
     console.log("Running Prisma migrations...");
     // Run from prisma workspace where the prisma package is installed
+    const prismaCwd = process.env.PRISMA_WORKSPACE_DIR || path.resolve(__dirname, "..", "..", "..", "prisma");
+    console.log(`[DEBUG] Running migrations from: ${prismaCwd}`);
     execSync("pnpm prisma migrate deploy", {
       stdio: "inherit",
-      cwd: path.join(process.cwd(), "..", "..", "prisma")
+      cwd: prismaCwd
     });
     console.log("✓ Migrations completed");
   } catch (err) {
