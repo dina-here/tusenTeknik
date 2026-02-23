@@ -8,7 +8,7 @@ async function bootstrap() {
   // Auto-run migrations on startup (needed for Render Free plan)
   try {
     console.log("Running Prisma migrations...");
-    execSync("node node_modules/.bin/prisma migrate deploy", {
+    execSync("pnpm exec prisma migrate deploy", {
       stdio: "inherit",
       cwd: process.cwd()
     });
