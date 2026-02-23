@@ -13,13 +13,19 @@ async function runMigrations() {
     console.log("Running Prisma migrations...");
     const prismaCwd = process.env.PRISMA_WORKSPACE_DIR || path.resolve(__dirname, "..", "..", "..", "prisma");
     console.log(`[DEBUG] Running migrations from: ${prismaCwd}`);
+    console.log(`[DEBUG] DATABASE_URL set: ${!!process.env.DATABASE_URL}`);
     execSync("pnpm prisma migrate deploy", {
       stdio: "inherit",
-      cwd: prismaCwd
+      cwd: prismaCwd,
+      env: {
+        ...process.env,
+        NODE_ENV: "production"
+      }
     });
     console.log("✓ Migrations completed");
-  } catch (err) {
-    console.warn("⚠ Migration check completed (might already be up-to-date)");
+  } catch (err: any) {
+    console.error("⚠ Migration failed:", err.message);
+    console.error("Continuing anyway - migrations may have already been applied");
   }
 }
 
