@@ -1,4 +1,4 @@
-import { Controller, Get, Param } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post } from "@nestjs/common";
 import { AdminService } from "./admin.service";
 import { PrismaService } from "../../common/prisma/prisma.service";
 
@@ -19,6 +19,19 @@ export class AdminController {
   @Get("/devices/:id")
   device(@Param("id") id: string) {
     return this.service.getDevice(id);
+  }
+
+  @Get("/service-history")
+  serviceHistory() {
+    return this.service.listServiceHistory();
+  }
+
+  @Post("/inbox/:id/resolve")
+  resolveInbox(
+    @Param("id") id: string,
+    @Body() body: { action: "merge" | "create"; deviceId?: string }
+  ) {
+    return this.service.resolveInbox(id, body);
   }
 
   // 1) Recommendations (senaste 50)

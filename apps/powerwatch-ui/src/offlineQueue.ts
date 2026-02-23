@@ -10,7 +10,7 @@ export type OfflineEvent = {
   source: "POWERWATCH";
   deviceRef: string;
   timestamp: string;
-  payload: { note?: string; reportedProblem?: string };
+  payload: { note?: string; reportedProblem?: string; installYear?: number; lastServiceYear?: number };
   contact?: { name: string; email?: string; phone?: string; role?: string };
 };
 

@@ -35,14 +35,39 @@ async function main() {
   const neo = await prisma.productCategory.findUnique({ where: { name: "NEO-serien" } });
   const en54 = await prisma.productCategory.findUnique({ where: { name: "EN54-serien" } });
   const sinus = await prisma.productCategory.findUnique({ where: { name: "SINUS UPS" } });
+  const batteries = await prisma.productCategory.findUnique({ where: { name: "Batterier" } });
 
-  if (!eco || !neo || !en54 || !sinus) throw new Error("Seed: kategorier saknas.");
+  if (!eco || !neo || !en54 || !sinus || !batteries) throw new Error("Seed: kategorier saknas.");
 
   const models = [
     { categoryId: eco.id, sku: "MT-ECO-250", displayName: "ECO 250", expectedLifetimeMonths: 72, nominalPowerW: 250, batteryCapacityAh: 45 },
     { categoryId: neo.id, sku: "MT-NEO-500", displayName: "NEO 500", expectedLifetimeMonths: 84, nominalPowerW: 500, batteryCapacityAh: 65 },
     { categoryId: en54.id, sku: "MT-EN54-300", displayName: "EN54 300", expectedLifetimeMonths: 60, nominalPowerW: 300, batteryCapacityAh: 55, notes: "Demo: anpassad för EN54-miljöer." },
-    { categoryId: sinus.id, sku: "MT-SINUS-UPS-800", displayName: "SINUS UPS 800", expectedLifetimeMonths: 72, nominalPowerW: 800, batteryCapacityAh: 80 }
+    { categoryId: sinus.id, sku: "MT-SINUS-UPS-800", displayName: "SINUS UPS 800", expectedLifetimeMonths: 72, nominalPowerW: 800, batteryCapacityAh: 80 },
+    {
+      categoryId: batteries.id,
+      sku: "MT113-12V01-01",
+      displayName: "UPLUS 6+ Design Life 1,2 Ah Battery (E-nummer 52 305 34)",
+      expectedLifetimeMonths: 72,
+      batteryCapacityAh: 1.2,
+      notes: "Artikelnummer MT113-12V01-01"
+    },
+    {
+      categoryId: batteries.id,
+      sku: "MT113-12V14-01",
+      displayName: "UPLUS 10+ Design Life 14Ah Battery (E-nummer 5230537)",
+      expectedLifetimeMonths: 120,
+      batteryCapacityAh: 14,
+      notes: "Artikelnummer MT113-12V14-01"
+    },
+    {
+      categoryId: neo.id,
+      sku: "FM01P10024P250-DSP1",
+      displayName: "NEO-serien 24V 25A FLX M Display (E-nummer 52 136 35)",
+      expectedLifetimeMonths: 84,
+      nominalPowerW: 600,
+      notes: "Batteribackup, artikelnummer FM01P10024P250-DSP1"
+    }
   ];
 
   for (const m of models) {
