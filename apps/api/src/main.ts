@@ -3,14 +3,16 @@ import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
 import { AllExceptionsFilter } from "./common/filters/all-exceptions.filter";
 import { execSync } from "child_process";
+import path from "path";
 
 async function bootstrap() {
   // Auto-run migrations on startup (needed for Render Free plan)
   try {
     console.log("Running Prisma migrations...");
-    execSync("pnpm exec prisma migrate deploy", {
+    // Run from prisma workspace where the prisma package is installed
+    execSync("pnpm prisma migrate deploy", {
       stdio: "inherit",
-      cwd: process.cwd()
+      cwd: path.join(process.cwd(), "..", "..", "prisma")
     });
     console.log("✓ Migrations completed");
   } catch (err) {
