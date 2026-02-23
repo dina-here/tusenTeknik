@@ -1,5 +1,9 @@
 # TusenTeknik Demo Platform
 
+Demo-länkar:
+- PowerAdmin: https://tusenteknik-admin-ui.onrender.com
+- PowerWatch: https://tusenteknik-powerwatch-ui.onrender.com
+
 En fullstack-demo som simulerar ett modernt backend-system för hantering av batteribackuper, fält-rapportering (PowerWatch), dimensionering och realtidsdata.
 
 Projektet är byggt för att demonstrera:
