@@ -137,6 +137,53 @@ pnpm prisma:seed
 ## 4. Starta alla tjänster
 pnpm dev
 
+## 5. Lokala env-filer
+- Root: .env.local (för app-URLer)
+- Prisma: prisma/.env.local (DATABASE_URL, DIRECT_URL)
+
+Tips: skapa även .env.example och prisma/.env.example för dokumentation.
+
+---
+
+# 🚀 Deploy på Render
+
+## 1. Skapa services (monorepo)
+Använd samma GitHub-repo för alla services. Sätt Root Directory per service.
+
+### API (Web Service)
+- Root Directory: (tomt)
+- Build Command: pnpm install && pnpm build
+- Start Command: node apps/api/dist/main.js
+- Environment:
+	- DATABASE_URL
+	- DIRECT_URL
+
+### Worker (Background Worker)
+- Root Directory: (tomt)
+- Build Command: pnpm install && pnpm --filter ./apps/worker build
+- Start Command: node apps/worker/dist/index.js
+- Environment:
+	- DATABASE_URL
+	- DIRECT_URL
+
+### Admin UI (Static Site)
+- Root Directory: admin-ui
+- Build Command: pnpm install && pnpm -r build
+- Publish Directory: dist
+- Environment:
+	- VITE_API_BASE = https://<din-api>.onrender.com
+
+### PowerWatch UI (Static Site)
+- Root Directory: powerwatch-ui
+- Build Command: pnpm install && pnpm -r build
+- Publish Directory: dist
+- Environment:
+	- VITE_API_BASE = https://<din-api>.onrender.com
+
+## 2. Viktigt om API_BASE
+PowerWatch UI och Admin UI behöver VITE_API_BASE satt i Render. Annars pekar de mot localhost och synk fungerar inte.
+
+
 ---
 
 # 🔍 URLs

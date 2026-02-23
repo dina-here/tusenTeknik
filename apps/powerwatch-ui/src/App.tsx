@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { enqueue, loadQueue, clearQueue, type OfflineEvent } from "./offlineQueue";
-import { postBatch } from "./api";
+import { API_BASE, postBatch } from "./api";
 
 export function App() {
   const [deviceRef, setDeviceRef] = useState("QR-NEO-0001");
@@ -38,9 +38,15 @@ export function App() {
       setStatus("Kön är tom.");
       return;
     }
-    const res = await postBatch(q);
-    clearQueue();
-    setStatus(`Synk klar. API-svar: ${JSON.stringify(res)}`);
+    try {
+      setStatus("Synkar...");
+      const res = await postBatch(q);
+      clearQueue();
+      setStatus(`Synk klar. API-svar: ${JSON.stringify(res)}`);
+    } catch (err: any) {
+      const msg = err?.message ?? String(err);
+      setStatus(`Synk misslyckades: ${msg}`);
+    }
   }
 
   return (
@@ -100,6 +106,12 @@ export function App() {
               Synka nu (batch)
             </button>
           </div>
+
+          {API_BASE.includes("localhost") && !location.hostname.includes("localhost") && (
+            <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+              API_BASE pekar på localhost ({API_BASE}). Sätt VITE_API_BASE i Render till din API-URL.
+            </div>
+          )}
 
           <div className="text-sm text-slate-600">
             Offline-kö: <span className="font-medium text-slate-900">{queue.length}</span>
