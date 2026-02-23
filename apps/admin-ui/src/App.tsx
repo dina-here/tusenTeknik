@@ -32,7 +32,7 @@ export function App() {
   const [tab, setTab] = useState<"inbox" | "devices" | "recommendations" | "sizing" | "service">("inbox");
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen">
       <Topbar tab={tab} setTab={setTab} />
       {tab === "inbox" && <Inbox />}
       {tab === "devices" && <Devices />}
@@ -68,8 +68,8 @@ function NavButton({ active, onClick, children }: any) {
     <button
       onClick={onClick}
       className={[
-        "rounded-xl px-3 py-2 text-sm border transition",
-        active ? "bg-slate-900 text-white border-slate-900" : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50"
+        "btn text-sm",
+        active ? "btn-primary" : "btn-ghost"
       ].join(" ")}
     >
       {children}
@@ -137,7 +137,7 @@ function Inbox() {
           <span className="text-slate-500" key={x.eventId}>{x.eventId}</span>,
           <div className="flex items-center gap-2" key={`${x.id}-merge`}>
             <select
-              className="rounded-lg border border-slate-200 px-2 py-1 text-xs"
+              className="input text-xs py-1"
               value={selection[x.id] ?? ""}
               onChange={(e) => setSelection((s) => ({ ...s, [x.id]: e.target.value }))}
             >
@@ -146,10 +146,10 @@ function Inbox() {
                 <option key={d.id} value={d.id}>{d.serialNumber} / {d.qrCodeId}</option>
               ))}
             </select>
-            <button onClick={() => mergeItem(x.id)} className="rounded-lg px-2 py-1 text-xs bg-slate-900 text-white">Merge</button>
+            <button onClick={() => mergeItem(x.id)} className="btn btn-primary text-xs px-2 py-1">Merge</button>
           </div>,
           <div className="flex items-center gap-2" key={`${x.id}-create`}>
-            <button onClick={() => createItem(x.id)} className="rounded-lg px-2 py-1 text-xs border border-slate-200">Skapa ny</button>
+            <button onClick={() => createItem(x.id)} className="btn btn-ghost text-xs px-2 py-1">Skapa ny</button>
             {status[x.id] && <span className="text-xs text-slate-600">{status[x.id]}</span>}
           </div>
         ])}
@@ -274,19 +274,19 @@ function SizingTool() {
   return (
     <Page title="Sizing" subtitle="Enkel dimensionering (demo).">
       {err && <ErrorBox text={err} />}
-      <div className="rounded-2xl border border-slate-200 bg-white shadow-sm p-4 space-y-4">
+      <div className="card p-4 space-y-4">
         <div className="grid grid-cols-3 gap-3">
           <Field label="Load (kW)">
-            <input className="w-full rounded-xl border border-slate-200 px-3 py-2" value={load} onChange={(e) => setLoad(e.target.value)} />
+            <input className="input" value={load} onChange={(e) => setLoad(e.target.value)} />
           </Field>
           <Field label="Backup hours">
-            <input className="w-full rounded-xl border border-slate-200 px-3 py-2" value={backupHours} onChange={(e) => setBackupHours(e.target.value)} />
+            <input className="input" value={backupHours} onChange={(e) => setBackupHours(e.target.value)} />
           </Field>
           <Field label="Temperature (°C)">
-            <input className="w-full rounded-xl border border-slate-200 px-3 py-2" value={temperature} onChange={(e) => setTemperature(e.target.value)} />
+            <input className="input" value={temperature} onChange={(e) => setTemperature(e.target.value)} />
           </Field>
         </div>
-        <button onClick={submit} className="rounded-xl px-4 py-2 bg-slate-900 text-white">Beräkna</button>
+        <button onClick={submit} className="btn btn-primary">Beräkna</button>
         {result && (
           <pre className="text-sm rounded-xl border border-slate-200 bg-slate-50 p-3 overflow-auto">
             {JSON.stringify(result, null, 2)}
@@ -318,7 +318,7 @@ function Field({ label, children }: any) {
 
 function CardTable({ headers, rows }: { headers: string[]; rows: any[][] }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+    <div className="card overflow-hidden">
       <table className="w-full text-sm">
         <thead className="bg-slate-50 text-slate-700">
           <tr>

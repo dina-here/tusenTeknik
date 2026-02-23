@@ -50,28 +50,28 @@ export function App() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen">
       <div className="max-w-3xl mx-auto p-6">
-        <h1 className="text-2xl font-semibold text-slate-900">PowerWatch (demo)</h1>
+        <h1 className="text-2xl font-semibold">PowerWatch (demo)</h1>
         <p className="text-slate-600 mt-1">
           Web-PWA som simulerar Android-app: QR/serial + offline-kö + batch-synk.
         </p>
 
-        <div className="mt-6 rounded-2xl border border-slate-200 bg-white shadow-sm p-5 space-y-4">
+        <div className="mt-6 card p-5 space-y-4">
           <Field label="DeviceRef (QR eller Serial)">
-            <input className="w-full rounded-xl border border-slate-200 px-3 py-2"
+            <input className="input"
               value={deviceRef} onChange={(e) => setDeviceRef(e.target.value)} />
           </Field>
 
           <Field label="Notering">
-            <input className="w-full rounded-xl border border-slate-200 px-3 py-2"
+            <input className="input"
               value={note} onChange={(e) => setNote(e.target.value)} />
           </Field>
 
           <div className="grid grid-cols-2 gap-3">
             <Field label="Installationsår">
               <input
-                className="w-full rounded-xl border border-slate-200 px-3 py-2"
+                className="input"
                 placeholder="t.ex. 2020"
                 value={installYear}
                 onChange={(e) => setInstallYear(e.target.value)}
@@ -79,7 +79,7 @@ export function App() {
             </Field>
             <Field label="Senaste serviceår">
               <input
-                className="w-full rounded-xl border border-slate-200 px-3 py-2"
+                className="input"
                 placeholder="t.ex. 2023"
                 value={lastServiceYear}
                 onChange={(e) => setLastServiceYear(e.target.value)}
@@ -89,20 +89,20 @@ export function App() {
 
           <div className="grid grid-cols-2 gap-3">
             <Field label="Kontakt - namn">
-              <input className="w-full rounded-xl border border-slate-200 px-3 py-2"
+              <input className="input"
                 value={name} onChange={(e) => setName(e.target.value)} />
             </Field>
             <Field label="Kontakt - email">
-              <input className="w-full rounded-xl border border-slate-200 px-3 py-2"
+              <input className="input"
                 value={email} onChange={(e) => setEmail(e.target.value)} />
             </Field>
           </div>
 
           <div className="flex gap-2">
-            <button onClick={addToQueue} className="rounded-xl px-4 py-2 bg-slate-900 text-white">
+            <button onClick={addToQueue} className="btn btn-primary">
               Lägg i offline-kö
             </button>
-            <button onClick={sync} className="rounded-xl px-4 py-2 border border-slate-200 bg-white">
+            <button onClick={sync} className="btn btn-ghost">
               Synka nu (batch)
             </button>
           </div>
