@@ -1,7 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { processIngressEvent } from "./processor";
 import { execSync } from "child_process";
-import path from "path";
 
 const prisma = new PrismaClient();
 
@@ -11,7 +10,8 @@ const prisma = new PrismaClient();
 async function runMigrations() {
   try {
     console.log("Running Prisma migrations...");
-    const prismaCwd = process.env.PRISMA_WORKSPACE_DIR || path.resolve(__dirname, "..", "..", "..", "prisma");
+    // Run from prisma workspace (from apps/worker/dist -> go up 3 levels -> prisma)
+    const prismaCwd = process.env.PRISMA_WORKSPACE_DIR || "/opt/render/project/src/prisma";
     console.log(`[DEBUG] Running migrations from: ${prismaCwd}`);
     console.log(`[DEBUG] DATABASE_URL set: ${!!process.env.DATABASE_URL}`);
     execSync("pnpm prisma migrate deploy", {

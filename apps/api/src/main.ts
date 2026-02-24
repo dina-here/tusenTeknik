@@ -3,13 +3,13 @@ import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
 import { AllExceptionsFilter } from "./common/filters/all-exceptions.filter";
 import { execSync } from "child_process";
-import path from "path";
 
 async function bootstrap() {
   // Auto-run migrations on startup (needed for Render Free plan)
   try {
     console.log("Running Prisma migrations...");
-    const prismaCwd = process.env.PRISMA_WORKSPACE_DIR || path.resolve(__dirname, "..", "..", "..", "prisma");
+    // Run from prisma workspace (from apps/api/dist -> go up 3 levels -> prisma)
+    const prismaCwd = process.env.PRISMA_WORKSPACE_DIR || "/opt/render/project/src/prisma";
     console.log(`[DEBUG] Running migrations from: ${prismaCwd}`);
     console.log(`[DEBUG] DATABASE_URL set: ${!!process.env.DATABASE_URL}`);
     execSync("pnpm prisma migrate deploy", {
