@@ -49,6 +49,7 @@ async function bootstrap() {
     origin: corsOrigins,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "x-api-key"],
+    credentials: true,
   });
 
   const port = process.env.NODE_ENV === 'production' ? 3000 : (Number(process.env.PORT) || 10000);
