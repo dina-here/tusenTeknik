@@ -34,19 +34,24 @@ async function bootstrap() {
   // Central felhantering (konsekvent JSON vid fel)
   app.useGlobalFilters(new AllExceptionsFilter());
 
-  // ✅ DEMO: tillåt anrop från Vite-frontends
-  const defaultOrigins = [
-    "http://localhost:5173",
-    "http://localhost:5174",
-    "https://milleteknik-admin-ui.onrender.com",
-    "https://milleteknik-powerwatch-ui.onrender.com"
-  ];
-  const corsOrigins = process.env.CORS_ORIGINS
-    ? process.env.CORS_ORIGINS.split(",").map((o) => o.trim()).filter(Boolean)
-    : defaultOrigins;
-
   app.enableCors({
-    origin: corsOrigins,
+    origin: (origin, callback) => {
+      const defaultOrigins = [
+        "http://localhost:5173",
+        "http://localhost:5174",
+        "https://milleteknik-admin-ui.onrender.com",
+        "https://milleteknik-powerwatch-ui.onrender.com"
+      ];
+      const allowedOrigins = process.env.CORS_ORIGINS
+        ? process.env.CORS_ORIGINS.split(",").map((o) => o.trim()).filter(Boolean)
+        : defaultOrigins;
+
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("CORS not allowed"));
+      }
+    },
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "x-api-key"],
     credentials: true,
