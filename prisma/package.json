@@ -6,6 +6,9 @@
     "prisma:migrate": "prisma migrate dev --name init",
     "prisma:seed": "ts-node ./seed.ts"
   },
+  "prisma": {
+    "seed": "ts-node ./seed.ts"
+  },
   "dependencies": {
     "@prisma/client": "^5.19.0"
   },
