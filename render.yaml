@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: api
+    runtime: node
+    buildCommand: pnpm install && pnpm --filter ./prisma prisma migrate deploy && pnpm --filter ./prisma prisma db seed && pnpm build
+    startCommand: node apps/api/dist/main.js
+    port: 3000
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
