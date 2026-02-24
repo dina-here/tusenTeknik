@@ -26,6 +26,24 @@ async function bootstrap() {
     console.error("Continuing anyway - migrations may have already been applied");
   }
 
+  // Auto-run seed on startup (for demo)
+  try {
+    console.log("Running Prisma seed...");
+    const prismaCwd = process.env.PRISMA_WORKSPACE_DIR || "/opt/render/project/src/prisma";
+    execSync("pnpm prisma db seed", {
+      stdio: "inherit",
+      cwd: prismaCwd,
+      env: {
+        ...process.env,
+        NODE_ENV: "production"
+      }
+    });
+    console.log("✓ Seed completed");
+  } catch (err: any) {
+    console.error("⚠ Seed failed:", err.message);
+    console.error("Continuing anyway - seed may have already been applied");
+  }
+
   const app = await NestFactory.create(AppModule, {
     // Nest logger räcker för demo; kan bytas till pino senare.
     logger: ["log", "error", "warn"]
