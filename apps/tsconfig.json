@@ -11,8 +11,6 @@
     "baseUrl": "./",
     "strict": true,
     "skipLibCheck": true,
-    "composite": true,
-    "jsx": "react-jsx",
-    "lib": ["ES2022", "DOM", "DOM.Iterable"]
+    "jsx": "react-jsx"
   }
 }
