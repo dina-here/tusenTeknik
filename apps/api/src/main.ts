@@ -35,26 +35,9 @@ async function bootstrap() {
   app.useGlobalFilters(new AllExceptionsFilter());
 
   app.enableCors({
-    origin: (origin, callback) => {
-      const defaultOrigins = [
-        "http://localhost:5173",
-        "http://localhost:5174",
-        "https://milleteknik-admin-ui.onrender.com",
-        "https://milleteknik-powerwatch-ui.onrender.com"
-      ];
-      const allowedOrigins = process.env.CORS_ORIGINS
-        ? process.env.CORS_ORIGINS.split(",").map((o) => o.trim()).filter(Boolean)
-        : defaultOrigins;
-
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("CORS not allowed"));
-      }
-    },
+    origin: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "x-api-key"],
-    credentials: true,
   });
 
   const port = process.env.NODE_ENV === 'production' ? 3000 : (Number(process.env.PORT) || 10000);
