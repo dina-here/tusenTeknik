@@ -245,6 +245,13 @@ function Recommendations() {
         ])}
       />
     </Page>
+  );
+}
+
+function ServiceHistory() {
+  const [items, setItems] = useState<ServiceEntry[]>([]);
+  const [err, setErr] = useState<string | null>(null);
+
   // Auto-refresh service history every 10 seconds
   useEffect(() => {
     const fetchServiceHistory = () => {
@@ -255,14 +262,7 @@ function Recommendations() {
 
     fetchServiceHistory(); // Initial fetch
     const interval = setInterval(fetchServiceHistory, 10000);
-    return () => clearInterval(interval
-  const [items, setItems] = useState<ServiceEntry[]>([]);
-  const [err, setErr] = useState<string | null>(null);
-
-  useEffect(() => {
-    apiGet<ServiceEntry[]>("/api/admin/service-history")
-      .then(setItems)
-      .catch((e) => setErr(String(e)));
+    return () => clearInterval(interval);
   }, []);
 
   return (
