@@ -84,27 +84,41 @@ function Inbox() {
   const [selection, setSelection] = useState<Record<string, string>>({});
   const [status, setStatus] = useState<Record<string, string>>({});
 
+  // Auto-refresh inbox every 5 seconds
   useEffect(() => {
-    apiGet<IngressEvent[]>("/api/admin/inbox")
-      .then(setItems)
-      .catch((e) => setErr(String(e)));
+    const fetchInbox = () => {
+      apiGet<IngressEvent[]>("/api/admin/inbox")
+        .then(setItems)
+        .catch((e) => setErr(String(e)));
+    };
+
+    fetchInbox(); // Initial fetch
+    const interval = setInterval(fetchInbox, 5000);
+    return () => clearInterval(interval);
   }, []);
 
+  // Auto-refresh devices every 5 seconds
   useEffect(() => {
-    apiGet<Device[]>("/api/admin/devices")
-      .then((list) => {
-        setDevices(list);
-        if (list.length > 0) {
-          const defaults: Record<string, string> = {};
-          items.forEach((i) => {
-            defaults[i.id] = list[0].id;
-          });
-          setSelection((prev) => ({ ...defaults, ...prev }));
-        }
-      })
-      .catch((e) => setErr(String(e)));
+    const fetchDevices = () => {
+      apiGet<Device[]>("/api/admin/devices")
+        .then((list) => {
+          setDevices(list);
+          if (list.length > 0) {
+            const defaults: Record<string, string> = {};
+            items.forEach((i) => {
+              defaults[i.id] = list[0].id;
+            });
+            setSelection((prev) => ({ ...defaults, ...prev }));
+          }
+        })
+        .catch((e) => setErr(String(e)));
+    };
+
+    fetchDevices(); // Initial fetch
+    const interval = setInterval(fetchDevices, 5000);
+    return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [items.length]);
 
   async function refresh() {
     const list = await apiGet<IngressEvent[]>("/api/admin/inbox");
@@ -162,10 +176,17 @@ function Devices() {
   const [items, setItems] = useState<Device[]>([]);
   const [err, setErr] = useState<string | null>(null);
 
+  // Auto-refresh devices every 5 seconds
   useEffect(() => {
-    apiGet<Device[]>("/api/admin/devices")
-      .then(setItems)
-      .catch((e) => setErr(String(e)));
+    const fetchDevices = () => {
+      apiGet<Device[]>("/api/admin/devices")
+        .then(setItems)
+        .catch((e) => setErr(String(e)));
+    };
+
+    fetchDevices(); // Initial fetch
+    const interval = setInterval(fetchDevices, 5000);
+    return () => clearInterval(interval);
   }, []);
 
   return (
@@ -196,10 +217,17 @@ function Recommendations() {
   const [items, setItems] = useState<Recommendation[]>([]);
   const [err, setErr] = useState<string | null>(null);
 
+  // Auto-refresh recommendations every 5 seconds
   useEffect(() => {
-    apiGet<Recommendation[]>("/api/admin/recommendations")
-      .then(setItems)
-      .catch((e) => setErr(String(e)));
+    const fetchRecommendations = () => {
+      apiGet<Recommendation[]>("/api/admin/recommendations")
+        .then(setItems)
+        .catch((e) => setErr(String(e)));
+    };
+
+    fetchRecommendations(); // Initial fetch
+    const interval = setInterval(fetchRecommendations, 5000);
+    return () => clearInterval(interval);
   }, []);
 
   return (
@@ -217,10 +245,17 @@ function Recommendations() {
         ])}
       />
     </Page>
-  );
-}
+  // Auto-refresh service history every 10 seconds
+  useEffect(() => {
+    const fetchServiceHistory = () => {
+      apiGet<ServiceEntry[]>("/api/admin/service-history")
+        .then(setItems)
+        .catch((e) => setErr(String(e)));
+    };
 
-function ServiceHistory() {
+    fetchServiceHistory(); // Initial fetch
+    const interval = setInterval(fetchServiceHistory, 10000);
+    return () => clearInterval(interval
   const [items, setItems] = useState<ServiceEntry[]>([]);
   const [err, setErr] = useState<string | null>(null);
 
