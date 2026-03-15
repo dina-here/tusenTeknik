@@ -5,30 +5,39 @@
 @layer base {
 	:root {
 		color-scheme: light;
+		--accent:           #F3C63F;
+		--interactive:      #0170B9;
+		--muted-text:       #4E4E4E;
+		--surface:          #F5F5F5;
+		--border:           #DDDDDD;
+		--container-width:  1080px;
+		--shadow:           0 0 4px rgba(0, 0, 0, 0.15);
 	}
 
 	html, body {
-		@apply bg-slate-50 text-slate-900 antialiased;
-	}
-
-	body {
-		@apply font-sans leading-relaxed;
+		background-color: #ffffff;
+		color: #1e1e1e;
+		font-family: Helvetica, Arial, sans-serif;
+		@apply antialiased leading-relaxed;
 	}
 
 	h1, h2, h3 {
-		@apply text-slate-900 tracking-tight;
+		color: #1e1e1e;
+		@apply tracking-tight;
 	}
 
 	p {
-		@apply text-slate-700;
+		color: var(--muted-text);
 	}
 
 	a {
-		@apply text-slate-900 underline-offset-4;
+		color: var(--interactive);
+		@apply underline-offset-4;
 	}
 
 	input, select, textarea {
-		@apply text-slate-900 placeholder:text-slate-400;
+		color: #1e1e1e;
+		@apply placeholder:text-slate-400;
 	}
 
 	button {
@@ -38,26 +47,64 @@
 
 @layer components {
 	.card {
-		@apply rounded-2xl border border-slate-200 bg-white shadow-sm;
+		background-color: #ffffff;
+		border: 1px solid var(--border);
+		box-shadow: var(--shadow);
+		@apply rounded-lg;
 	}
 
 	.input {
-		@apply w-full rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300;
+		width: 100%;
+		background-color: #ffffff;
+		border: 1px solid var(--border);
+		color: #1e1e1e;
+		box-shadow: var(--shadow);
+		@apply rounded-lg px-3 py-2 focus:outline-none;
+	}
+
+	.input:focus {
+		border-color: var(--interactive);
+		box-shadow: 0 0 0 3px rgba(1, 112, 185, 0.15);
 	}
 
 	.btn {
-		@apply inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-medium;
+		@apply inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium;
 	}
 
 	.btn-primary {
-		@apply bg-indigo-600 text-white hover:bg-indigo-700;
+		background-color: var(--interactive);
+		color: #ffffff;
+	}
+
+	.btn-primary:hover {
+		background-color: #015fa0;
+	}
+
+	.btn-accent {
+		background-color: var(--accent);
+		color: #1e1e1e;
+	}
+
+	.btn-accent:hover {
+		background-color: #e0b235;
 	}
 
 	.btn-ghost {
-		@apply border border-slate-200 bg-white text-slate-900 hover:bg-slate-100;
+		background-color: #ffffff;
+		border: 1px solid var(--border);
+		color: #1e1e1e;
+	}
+
+	.btn-ghost:hover {
+		background-color: var(--surface);
 	}
 
 	.badge {
-		@apply inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs text-slate-700;
+		display: inline-flex;
+		align-items: center;
+		border: 1px solid var(--border);
+		background-color: var(--surface);
+		color: var(--muted-text);
+		@apply rounded-full px-2.5 py-1 text-xs;
 	}
 }
