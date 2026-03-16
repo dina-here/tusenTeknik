@@ -50,10 +50,10 @@ export function App() {
   }
 
   return (
-    <div className="min-h-screen">
-      <div className="max-w-3xl mx-auto p-4 sm:p-6">
-        <h1 className="text-2xl font-semibold">PowerWatch (demo)</h1>
-        <p className="text-slate-600 mt-1">
+    <div className="min-h-screen bg-white text-millet-text">
+      <div className="max-w-millet mx-auto p-4 sm:p-6">
+        <h1 className="text-2xl font-semibold text-millet-text">PowerWatch (demo)</h1>
+        <p className="text-millet-muted mt-1">
           Web-PWA som simulerar Android-app: QR/serial + offline-kö + batch-synk.
         </p>
 
@@ -108,17 +108,17 @@ export function App() {
           </div>
 
           {API_BASE.includes("localhost") && !location.hostname.includes("localhost") && (
-            <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+            <div className="rounded-lg border border-yellow-300 bg-yellow-50 p-3 text-sm text-yellow-900">
               API_BASE pekar på localhost ({API_BASE}). Sätt VITE_API_BASE i Render till din API-URL.
             </div>
           )}
 
-          <div className="text-sm text-slate-600">
-            Offline-kö: <span className="font-medium text-slate-900">{queue.length}</span>
+          <div className="text-sm text-millet-muted">
+            Offline-kö: <span className="font-medium text-millet-text">{queue.length}</span>
           </div>
 
           {status && (
-            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
+            <div className="rounded-lg border border-millet-border bg-millet-surface p-3 text-sm text-millet-text">
               {status}
             </div>
           )}
@@ -131,7 +131,7 @@ export function App() {
 function Field({ label, children }: any) {
   return (
     <label className="block">
-      <div className="text-sm text-slate-700 mb-1">{label}</div>
+      <div className="text-sm text-millet-text mb-1">{label}</div>
       {children}
     </label>
   );

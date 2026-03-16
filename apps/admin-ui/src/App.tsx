@@ -45,11 +45,11 @@ export function App() {
 
 function Topbar({ tab, setTab }: { tab: string; setTab: (t: any) => void }) {
   return (
-    <div className="border-b border-slate-200 bg-white">
-      <div className="max-w-6xl mx-auto px-4 py-4 sm:px-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div className="border-b border-millet-border bg-white">
+      <div className="max-w-millet mx-auto px-4 py-4 sm:px-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <div className="text-lg font-semibold text-slate-900">PowerAdmin (demo)</div>
-          <div className="text-sm text-slate-600">Inbox, Devices, Recommendations, Telemetry</div>
+          <div className="text-lg font-semibold text-millet-text">PowerAdmin (demo)</div>
+          <div className="text-sm text-millet-muted">Inbox, Devices, Recommendations, Telemetry</div>
         </div>
         <div className="flex flex-wrap gap-2">
           <NavButton active={tab === "inbox"} onClick={() => setTab("inbox")}>Inbox</NavButton>
@@ -148,7 +148,7 @@ function Inbox() {
           new Date(x.receivedAt).toLocaleString(),
           x.deviceRef,
           <StatusBadge key={x.id} status={x.status} />,
-          <span className="text-slate-500" key={x.eventId}>{x.eventId}</span>,
+          <span className="text-millet-muted" key={x.eventId}>{x.eventId}</span>,
           <div className="flex items-center gap-2" key={`${x.id}-merge`}>
             <select
               className="input text-xs py-1"
@@ -164,7 +164,7 @@ function Inbox() {
           </div>,
           <div className="flex items-center gap-2" key={`${x.id}-create`}>
             <button onClick={() => createItem(x.id)} className="btn btn-ghost text-xs px-2 py-1">Skapa ny</button>
-            {status[x.id] && <span className="text-xs text-slate-600">{status[x.id]}</span>}
+            {status[x.id] && <span className="text-xs text-millet-muted">{status[x.id]}</span>}
           </div>
         ])}
       />
@@ -195,15 +195,15 @@ function Devices() {
       <CardTable
         headers={["Serial", "QR", "Model", "Customer", "Site", "Install", "Last Service", "Status"]}
         rows={items.map((d) => [
-          <span className="font-medium text-slate-900" key={d.id}>{d.serialNumber}</span>,
-          <span className="text-slate-600" key={d.qrCodeId}>{d.qrCodeId}</span>,
-          <span className="text-slate-700" key={d.model.sku}>{d.model.displayName}</span>,
-          <span className="text-slate-700" key={`${d.id}-cust`}>{d.site?.customer?.name ?? "-"}</span>,
-          <span className="text-slate-700" key={`${d.id}-site`}>{d.site?.name ?? "-"}</span>,
-          <span className="text-slate-700" key={`${d.id}-install`}>
+          <span className="font-medium text-millet-text" key={d.id}>{d.serialNumber}</span>,
+          <span className="text-millet-muted" key={d.qrCodeId}>{d.qrCodeId}</span>,
+          <span className="text-millet-text" key={d.model.sku}>{d.model.displayName}</span>,
+          <span className="text-millet-text" key={`${d.id}-cust`}>{d.site?.customer?.name ?? "-"}</span>,
+          <span className="text-millet-text" key={`${d.id}-site`}>{d.site?.name ?? "-"}</span>,
+          <span className="text-millet-text" key={`${d.id}-install`}>
             {d.installDate ? new Date(d.installDate).toLocaleDateString() : "-"}
           </span>,
-          <span className="text-slate-700" key={`${d.id}-service`}>
+          <span className="text-millet-text" key={`${d.id}-service`}>
             {d.serviceHistory?.[0]?.serviceDate ? new Date(d.serviceHistory[0].serviceDate).toLocaleDateString() : "-"}
           </span>,
           <StatusBadge key={d.status} status={d.status} />
@@ -237,11 +237,11 @@ function Recommendations() {
         headers={["Tid", "Device", "Model", "Type", "Status", "Reason"]}
         rows={items.map((r) => [
           new Date(r.createdAt).toLocaleString(),
-          <span className="font-medium text-slate-900" key={r.id}>{r.device.qrCodeId || r.device.serialNumber}</span>,
-          <span className="text-slate-700" key={`${r.id}-model`}>{r.device.model.displayName}</span>,
-          <span className="text-slate-700" key={`${r.id}-type`}>{r.type}</span>,
+          <span className="font-medium text-millet-text" key={r.id}>{r.device.qrCodeId || r.device.serialNumber}</span>,
+          <span className="text-millet-text" key={`${r.id}-model`}>{r.device.model.displayName}</span>,
+          <span className="text-millet-text" key={`${r.id}-type`}>{r.type}</span>,
           <StatusBadge key={`${r.id}-status`} status={r.status ?? "NEW"} />,
-          <span className="text-slate-600" key={`${r.id}-reason`}>{r.reason}</span>
+          <span className="text-millet-muted" key={`${r.id}-reason`}>{r.reason}</span>
         ])}
       />
     </Page>
@@ -272,11 +272,11 @@ function ServiceHistory() {
         headers={["Tid", "Device", "Model", "Customer", "Action", "Notes"]}
         rows={items.map((s) => [
           new Date(s.serviceDate).toLocaleDateString(),
-          <span className="font-medium text-slate-900" key={s.id}>{s.device.qrCodeId || s.device.serialNumber}</span>,
-          <span className="text-slate-700" key={`${s.id}-model`}>{s.device.model.displayName}</span>,
-          <span className="text-slate-700" key={`${s.id}-cust`}>{s.device.site?.customer?.name ?? "-"}</span>,
-          <span className="text-slate-700" key={`${s.id}-action`}>{s.action}</span>,
-          <span className="text-slate-600" key={`${s.id}-notes`}>{s.notes ?? "-"}</span>
+          <span className="font-medium text-millet-text" key={s.id}>{s.device.qrCodeId || s.device.serialNumber}</span>,
+          <span className="text-millet-text" key={`${s.id}-model`}>{s.device.model.displayName}</span>,
+          <span className="text-millet-text" key={`${s.id}-cust`}>{s.device.site?.customer?.name ?? "-"}</span>,
+          <span className="text-millet-text" key={`${s.id}-action`}>{s.action}</span>,
+          <span className="text-millet-muted" key={`${s.id}-notes`}>{s.notes ?? "-"}</span>
         ])}
       />
     </Page>
@@ -323,7 +323,7 @@ function SizingTool() {
         </div>
         <button onClick={submit} className="btn btn-primary">Beräkna</button>
         {result && (
-          <pre className="text-sm rounded-xl border border-slate-200 bg-slate-50 p-3 overflow-auto">
+          <pre className="text-sm rounded-lg border border-millet-border bg-millet-surface p-3 overflow-auto text-millet-text">
             {JSON.stringify(result, null, 2)}
           </pre>
         )}
@@ -334,9 +334,9 @@ function SizingTool() {
 
 function Page({ title, subtitle, children }: any) {
   return (
-    <div className="max-w-6xl mx-auto p-4 sm:p-6">
-      <h1 className="text-2xl font-semibold text-slate-900">{title}</h1>
-      <p className="text-slate-600 mt-1">{subtitle}</p>
+    <div className="max-w-millet mx-auto p-4 sm:p-6">
+      <h1 className="text-2xl font-semibold text-millet-text">{title}</h1>
+      <p className="text-millet-muted mt-1">{subtitle}</p>
       <div className="mt-6">{children}</div>
     </div>
   );
@@ -345,7 +345,7 @@ function Page({ title, subtitle, children }: any) {
 function Field({ label, children }: any) {
   return (
     <label className="block">
-      <div className="text-sm text-slate-700 mb-1">{label}</div>
+      <div className="text-sm text-millet-text mb-1">{label}</div>
       {children}
     </label>
   );
@@ -354,8 +354,8 @@ function Field({ label, children }: any) {
 function CardTable({ headers, rows }: { headers: string[]; rows: any[][] }) {
   return (
     <div className="card overflow-x-auto">
-      <table className="min-w-[560px] sm:min-w-[720px] w-full text-xs sm:text-sm">
-        <thead className="bg-slate-50 text-slate-700">
+      <table className="min-w-[560px] sm:min-w-[720px] w-full text-xs sm:text-sm text-millet-text">
+        <thead className="bg-millet-surface text-millet-text">
           <tr>
             {headers.map((h) => (
               <th key={h} className="text-left font-medium p-3 whitespace-nowrap">{h}</th>
@@ -364,7 +364,7 @@ function CardTable({ headers, rows }: { headers: string[]; rows: any[][] }) {
         </thead>
         <tbody>
           {rows.map((r, idx) => (
-            <tr key={idx} className="border-t border-slate-100">
+            <tr key={idx} className="border-t border-millet-border/70">
               {r.map((cell, cidx) => (
                 <td key={cidx} className="p-3 whitespace-nowrap">{cell}</td>
               ))}
@@ -392,8 +392,8 @@ function ErrorBox({ text }: { text: string }) {
 
 function StatusBadge({ status }: { status: string }) {
   const base = "inline-flex items-center rounded-full px-2 py-0.5 text-xs border";
-  if (status === "ACCEPTED") return <span className={`${base} bg-slate-50 border-slate-200 text-slate-800`}>ACCEPTED</span>;
+  if (status === "ACCEPTED") return <span className={`${base} bg-millet-surface border-millet-border text-millet-text`}>ACCEPTED</span>;
   if (status === "REJECTED") return <span className={`${base} bg-red-50 border-red-200 text-red-800`}>REJECTED</span>;
-  if (status === "PROCESSING") return <span className={`${base} bg-amber-50 border-amber-200 text-amber-800`}>PROCESSING</span>;
-  return <span className={`${base} bg-slate-50 border-slate-200 text-slate-700`}>{status}</span>;
+  if (status === "PROCESSING") return <span className={`${base} bg-yellow-50 border-yellow-300 text-yellow-900`}>PROCESSING</span>;
+  return <span className={`${base} bg-millet-surface border-millet-border text-millet-muted`}>{status}</span>;
 }
