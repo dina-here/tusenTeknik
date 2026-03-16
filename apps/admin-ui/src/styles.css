@@ -2,109 +2,198 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-	:root {
-		color-scheme: light;
-		--accent:           #F3C63F;
-		--interactive:      #0170B9;
-		--muted-text:       #4E4E4E;
-		--surface:          #F5F5F5;
-		--border:           #DDDDDD;
-		--container-width:  1080px;
-		--shadow:           0 0 4px rgba(0, 0, 0, 0.15);
-	}
+/* =========================================================
+   Milleteknik-inspired App UI v1
+   ========================================================= */
 
-	html, body {
-		background-color: #ffffff;
-		color: #1e1e1e;
-		font-family: Helvetica, Arial, sans-serif;
-		@apply antialiased leading-relaxed;
-	}
+:root {
+  /* Core tokens */
+  --mt-font-family: Helvetica, Arial, sans-serif;
+  --mt-color-accent: #f3c63f;
+  --mt-color-accent-hover: #e0b52f;
+  --mt-color-interactive: #0170b9;
+  --mt-color-text: #1e1e1e;
+  --mt-color-text-muted: #4e4e4e;
+  --mt-color-bg: #ffffff;
+  --mt-color-surface: #f5f5f5;
+  --mt-color-border: #dddddd;
+  --mt-content-width: 1080px;
+  --mt-shadow: 0 0 4px rgba(0, 0, 0, 0.15);
 
-	h1, h2, h3 {
-		color: #1e1e1e;
-		@apply tracking-tight;
-	}
+  /* Existing aliases used in app */
+  --accent: #f3c63f;
+  --interactive: #0170b9;
+  --muted-text: #4e4e4e;
+  --surface: #f5f5f5;
+  --border: #dddddd;
+  --container-width: 1080px;
+  --shadow: 0 0 4px rgba(0, 0, 0, 0.15);
 
-	p {
-		color: var(--muted-text);
-	}
-
-	a {
-		color: var(--interactive);
-		@apply underline-offset-4;
-	}
-
-	input, select, textarea {
-		color: #1e1e1e;
-		@apply placeholder:text-slate-400;
-	}
-
-	button {
-		@apply transition-colors duration-150 ease-out;
-	}
+  --mt-radius-sm: 6px;
+  --mt-radius-md: 8px;
+  --mt-radius-lg: 12px;
+  --mt-radius-pill: 999px;
 }
 
-@layer components {
-	.card {
-		background-color: #ffffff;
-		border: 1px solid var(--border);
-		box-shadow: var(--shadow);
-		@apply rounded-lg;
-	}
+*, *::before, *::after { box-sizing: border-box; }
+html, body, #root { min-height: 100%; }
+html, body { margin: 0; padding: 0; }
 
-	.input {
-		width: 100%;
-		background-color: #ffffff;
-		border: 1px solid var(--border);
-		color: #1e1e1e;
-		box-shadow: var(--shadow);
-		@apply rounded-lg px-3 py-2 focus:outline-none;
-	}
+body {
+  font-family: var(--mt-font-family);
+  color: var(--mt-color-text);
+  background: var(--mt-color-bg);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
 
-	.input:focus {
-		border-color: var(--interactive);
-		box-shadow: 0 0 0 3px rgba(1, 112, 185, 0.15);
-	}
+a {
+  color: var(--mt-color-interactive);
+  text-decoration: none;
+}
 
-	.btn {
-		@apply inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium;
-	}
+button, input, select, textarea { font: inherit; }
 
-	.btn-primary {
-		background-color: var(--interactive);
-		color: #ffffff;
-	}
+/* Shell */
+.app-shell, .min-h-screen {
+  min-height: 100vh;
+  background: var(--mt-color-bg);
+}
 
-	.btn-primary:hover {
-		background-color: #015fa0;
-	}
+/* Generic cards/panels */
+.card {
+  background: var(--mt-color-bg);
+  border: 1px solid var(--mt-color-border);
+  border-radius: var(--mt-radius-lg);
+  box-shadow: var(--mt-shadow);
+}
 
-	.btn-accent {
-		background-color: var(--accent);
-		color: #1e1e1e;
-	}
+/* Buttons */
+.btn,
+button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: var(--mt-radius-md);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
 
-	.btn-accent:hover {
-		background-color: #e0b235;
-	}
+.btn:disabled,
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
 
-	.btn-ghost {
-		background-color: #ffffff;
-		border: 1px solid var(--border);
-		color: #1e1e1e;
-	}
+.btn-primary {
+  background: var(--mt-color-accent);
+  color: #111111;
+  border: 1px solid var(--mt-color-accent);
+}
 
-	.btn-ghost:hover {
-		background-color: var(--surface);
-	}
+.btn-primary:hover {
+  background: var(--mt-color-accent-hover);
+  border-color: var(--mt-color-accent-hover);
+}
 
-	.badge {
-		display: inline-flex;
-		align-items: center;
-		border: 1px solid var(--border);
-		background-color: var(--surface);
-		color: var(--muted-text);
-		@apply rounded-full px-2.5 py-1 text-xs;
-	}
+.btn-ghost {
+  background: var(--mt-color-bg);
+  color: var(--mt-color-text);
+  border: 1px solid var(--mt-color-border);
+}
+
+.btn-ghost:hover {
+  background: var(--mt-color-surface);
+}
+
+/* Inputs */
+.input,
+input[type="text"],
+input[type="email"],
+input[type="number"],
+select,
+textarea {
+  width: 100%;
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--mt-color-border);
+  border-radius: var(--mt-radius-md);
+  background: var(--mt-color-bg);
+  color: var(--mt-color-text);
+  font-size: 14px;
+  outline: none;
+  box-shadow: var(--mt-shadow);
+}
+
+textarea {
+  min-height: 96px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  resize: vertical;
+}
+
+.input:focus,
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--mt-color-accent);
+  box-shadow: 0 0 0 3px rgba(243, 198, 63, 0.18);
+}
+
+/* Table styling for current markup */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead th {
+  text-align: left;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--mt-color-text-muted);
+  background: #fafafa;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--mt-color-border);
+  white-space: nowrap;
+}
+
+tbody td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #f0f0f0;
+  vertical-align: middle;
+  font-size: 14px;
+  color: var(--mt-color-text);
+}
+
+tbody tr:hover {
+  background: #fcfcfc;
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Badge helper class */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: var(--mt-radius-pill);
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid var(--mt-color-border);
+  background: var(--mt-color-surface);
+  color: var(--mt-color-text-muted);
+}
+
+/* Keep content width consistent */
+.max-w-millet {
+  max-width: var(--mt-content-width);
 }
