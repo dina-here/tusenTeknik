@@ -3,6 +3,7 @@
   "private": true,
   "scripts": {
     "dev": "dotenv -e ../../.env -e ../../prisma/.env.local -- ts-node --transpile-only src/index.ts",
+    "prebuild": "pnpm --dir ../../prisma prisma:generate",
     "build": "tsc -p tsconfig.json",
     "start": "node dist/index.js",
     "lint": "eslint ."

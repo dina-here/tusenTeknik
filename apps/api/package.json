@@ -3,6 +3,7 @@
   "private": true,
   "scripts": {
     "dev": "dotenv -e ../../.env -e ../../prisma/.env.local -- nest start --watch",
+    "prebuild": "pnpm --dir ../../prisma prisma:generate",
     "build": "nest build",
     "start": "node dist/main.js",
     "lint": "eslint ."
