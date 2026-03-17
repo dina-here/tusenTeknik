@@ -2,6 +2,5 @@
   <rect width="320" height="88" rx="8" fill="white"/>
   <text x="12" y="44" fill="#111111" font-family="Helvetica, Arial, sans-serif" font-size="38" font-weight="700" letter-spacing="-1.2">milleteknik</text>
   <text x="12" y="66" fill="#787878" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="700" letter-spacing="0.8">SVENSKTILLVERKAD RESERVKRAFT</text>
-  <circle cx="286" cy="17" r="10" fill="#F3C63F"/>
-  <path d="M286 10.8L287.9 14.8L292.3 15.2L289 18.2L290 22.4L286 20.2L282 22.4L283 18.2L279.7 15.2L284.1 14.8L286 10.8Z" fill="#111111"/>
+  <path d="M270 20 C274 12 278 12 282 20 C286 28 290 28 294 20 C298 12 302 12 306 20" stroke="#2a2a2a" stroke-width="2.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
