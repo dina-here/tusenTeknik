@@ -118,7 +118,7 @@ export class AdminService {
             deviceId: device.id,
             serviceDate: from,
             action: "SERVICE",
-            notes: "Serviceår rapporterat från PowerWatch"
+            notes: "Serviceår rapporterat från PowerRegister"
           }
         });
       }

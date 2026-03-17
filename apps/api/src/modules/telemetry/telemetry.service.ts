@@ -20,7 +20,7 @@ export class TelemetryService {
     });
 
     if (!device) {
-      throw new NotFoundException("Okänd enhet. Skapa i PowerAdmin eller rapportera via PowerWatch först.");
+      throw new NotFoundException("Okänd enhet. Skapa i PowerAdmin eller rapportera via PowerRegister först.");
     }
 
     await this.prisma.telemetryRaw.create({

@@ -1,5 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { apiGet, apiPost, API_BASE } from "./api/client";
+import milleteknikLogo from "./assets/milleteknik-logo.svg";
+import { languageOptions, useI18n, type LanguageCode } from "./i18n";
 
 type IngressEvent = { id: string; deviceRef: string; status: string; receivedAt: string; eventId: string };
 type Device = {
@@ -28,8 +30,11 @@ type ServiceEntry = {
   device: { qrCodeId: string; serialNumber: string; model: { displayName: string }; site?: { customer?: { name?: string | null } | null } | null };
 };
 
+type TabKey = "inbox" | "devices" | "recommendations" | "sizing" | "service";
+type RowStatusKey = "chooseDeviceStatus" | "mergedStatus" | "createdStatus";
+
 export function App() {
-  const [tab, setTab] = useState<"inbox" | "devices" | "recommendations" | "sizing" | "service">("inbox");
+  const [tab, setTab] = useState<TabKey>("inbox");
 
   return (
     <div className="min-h-screen">
@@ -43,27 +48,57 @@ export function App() {
   );
 }
 
-function Topbar({ tab, setTab }: { tab: string; setTab: (t: any) => void }) {
+function Topbar({ tab, setTab }: { tab: TabKey; setTab: (t: TabKey) => void }) {
+  const { t } = useI18n();
+
   return (
     <div className="border-b border-millet-border bg-white">
       <div className="max-w-millet mx-auto px-4 py-4 sm:px-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <div className="text-lg font-semibold text-millet-text">PowerAdmin (demo)</div>
-          <div className="text-sm text-millet-muted">Inbox, Devices, Recommendations, Telemetry</div>
+        <div className="flex items-center gap-4">
+          <img
+            src={milleteknikLogo}
+            alt="Milleteknik"
+            className="h-10 w-auto object-contain sm:h-12"
+          />
+          <div>
+            <div className="text-lg font-semibold text-millet-text">{t("appTitle")}</div>
+            <div className="text-sm text-millet-muted">{t("appSubtitle")}</div>
+          </div>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <NavButton active={tab === "inbox"} onClick={() => setTab("inbox")}>Inbox</NavButton>
-          <NavButton active={tab === "devices"} onClick={() => setTab("devices")}>Devices</NavButton>
-          <NavButton active={tab === "recommendations"} onClick={() => setTab("recommendations")}>Recommendations</NavButton>
-          <NavButton active={tab === "sizing"} onClick={() => setTab("sizing")}>Sizing</NavButton>
-          <NavButton active={tab === "service"} onClick={() => setTab("service")}>Service</NavButton>
+        <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+          <NavButton active={tab === "inbox"} onClick={() => setTab("inbox")}>{t("inbox")}</NavButton>
+          <NavButton active={tab === "devices"} onClick={() => setTab("devices")}>{t("devices")}</NavButton>
+          <NavButton active={tab === "recommendations"} onClick={() => setTab("recommendations")}>{t("recommendations")}</NavButton>
+          <NavButton active={tab === "sizing"} onClick={() => setTab("sizing")}>{t("sizing")}</NavButton>
+          <NavButton active={tab === "service"} onClick={() => setTab("service")}>{t("service")}</NavButton>
+          <LanguageSwitcher />
         </div>
       </div>
     </div>
   );
 }
 
-function NavButton({ active, onClick, children }: any) {
+function LanguageSwitcher() {
+  const { language, setLanguage } = useI18n();
+
+  return (
+    <div className="flex flex-wrap items-center gap-1 sm:ml-2">
+      {languageOptions.map((option) => (
+        <button
+          key={option.code}
+          type="button"
+          onClick={() => setLanguage(option.code)}
+          className={["btn text-xs px-2 py-1 min-h-0", language === option.code ? "btn-primary" : "btn-ghost"].join(" ")}
+          aria-pressed={language === option.code}
+        >
+          {option.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function NavButton({ active, onClick, children }: { active: boolean; onClick: () => void; children: ReactNode }) {
   return (
     <button
       onClick={onClick}
@@ -78,11 +113,12 @@ function NavButton({ active, onClick, children }: any) {
 }
 
 function Inbox() {
+  const { locale, t } = useI18n();
   const [items, setItems] = useState<IngressEvent[]>([]);
   const [err, setErr] = useState<string | null>(null);
   const [devices, setDevices] = useState<Device[]>([]);
   const [selection, setSelection] = useState<Record<string, string>>({});
-  const [status, setStatus] = useState<Record<string, string>>({});
+  const [status, setStatus] = useState<Record<string, RowStatusKey>>({});
 
   // Auto-refresh inbox every 5 seconds
   useEffect(() => {
@@ -127,25 +163,25 @@ function Inbox() {
 
   async function mergeItem(id: string) {
     const deviceId = selection[id];
-    if (!deviceId) return setStatus((s) => ({ ...s, [id]: "Välj en enhet" }));
+    if (!deviceId) return setStatus((s) => ({ ...s, [id]: "chooseDeviceStatus" }));
     await apiPost(`/api/admin/inbox/${id}/resolve`, { action: "merge", deviceId });
-    setStatus((s) => ({ ...s, [id]: "Merged" }));
+    setStatus((s) => ({ ...s, [id]: "mergedStatus" }));
     await refresh();
   }
 
   async function createItem(id: string) {
     await apiPost(`/api/admin/inbox/${id}/resolve`, { action: "create" });
-    setStatus((s) => ({ ...s, [id]: "Skapad" }));
+    setStatus((s) => ({ ...s, [id]: "createdStatus" }));
     await refresh();
   }
 
   return (
-    <Page title="Inbox" subtitle="Inkomna PowerWatch-events (staging). Workern processar dessa asynkront.">
+    <Page title={t("inboxTitle")} subtitle={t("inboxSubtitle")}>
       {err && <ErrorBox text={err} />}
       <CardTable
-        headers={["Tid", "DeviceRef", "Status", "EventId", "Merge", "Create"]}
+        headers={[t("time"), t("deviceRef"), t("status"), t("eventId"), t("merge"), t("create")]}
         rows={items.map((x) => [
-          new Date(x.receivedAt).toLocaleString(),
+          new Date(x.receivedAt).toLocaleString(locale),
           x.deviceRef,
           <StatusBadge key={x.id} status={x.status} />,
           <span className="text-millet-muted" key={x.eventId}>{x.eventId}</span>,
@@ -155,16 +191,16 @@ function Inbox() {
               value={selection[x.id] ?? ""}
               onChange={(e) => setSelection((s) => ({ ...s, [x.id]: e.target.value }))}
             >
-              <option value="" disabled>Välj device</option>
+              <option value="" disabled>{t("selectDevice")}</option>
               {devices.map((d) => (
                 <option key={d.id} value={d.id}>{d.serialNumber} / {d.qrCodeId}</option>
               ))}
             </select>
-            <button onClick={() => mergeItem(x.id)} className="btn btn-primary text-xs px-2 py-1">Merge</button>
+            <button onClick={() => mergeItem(x.id)} className="btn btn-primary text-xs px-2 py-1">{t("merge")}</button>
           </div>,
           <div className="flex items-center gap-2" key={`${x.id}-create`}>
-            <button onClick={() => createItem(x.id)} className="btn btn-ghost text-xs px-2 py-1">Skapa ny</button>
-            {status[x.id] && <span className="text-xs text-millet-muted">{status[x.id]}</span>}
+            <button onClick={() => createItem(x.id)} className="btn btn-ghost text-xs px-2 py-1">{t("createNew")}</button>
+            {status[x.id] && <span className="text-xs text-millet-muted">{t(status[x.id])}</span>}
           </div>
         ])}
       />
@@ -173,6 +209,7 @@ function Inbox() {
 }
 
 function Devices() {
+  const { locale, t } = useI18n();
   const [items, setItems] = useState<Device[]>([]);
   const [err, setErr] = useState<string | null>(null);
 
@@ -190,10 +227,10 @@ function Devices() {
   }, []);
 
   return (
-    <Page title="Devices" subtitle="Enhetslista med modell och status. (Detaljvy kan byggas som nästa steg.)">
+    <Page title={t("devicesTitle")} subtitle={t("devicesSubtitle")}>
       {err && <ErrorBox text={err} />}
       <CardTable
-        headers={["Serial", "QR", "Model", "Customer", "Site", "Install", "Last Service", "Status"]}
+        headers={[t("serial"), t("qr"), t("model"), t("customer"), t("site"), t("install"), t("lastService"), t("status")]}
         rows={items.map((d) => [
           <span className="font-medium text-millet-text" key={d.id}>{d.serialNumber}</span>,
           <span className="text-millet-muted" key={d.qrCodeId}>{d.qrCodeId}</span>,
@@ -201,10 +238,10 @@ function Devices() {
           <span className="text-millet-text" key={`${d.id}-cust`}>{d.site?.customer?.name ?? "-"}</span>,
           <span className="text-millet-text" key={`${d.id}-site`}>{d.site?.name ?? "-"}</span>,
           <span className="text-millet-text" key={`${d.id}-install`}>
-            {d.installDate ? new Date(d.installDate).toLocaleDateString() : "-"}
+            {d.installDate ? new Date(d.installDate).toLocaleDateString(locale) : "-"}
           </span>,
           <span className="text-millet-text" key={`${d.id}-service`}>
-            {d.serviceHistory?.[0]?.serviceDate ? new Date(d.serviceHistory[0].serviceDate).toLocaleDateString() : "-"}
+            {d.serviceHistory?.[0]?.serviceDate ? new Date(d.serviceHistory[0].serviceDate).toLocaleDateString(locale) : "-"}
           </span>,
           <StatusBadge key={d.status} status={d.status} />
         ])}
@@ -214,6 +251,7 @@ function Devices() {
 }
 
 function Recommendations() {
+  const { locale, t } = useI18n();
   const [items, setItems] = useState<Recommendation[]>([]);
   const [err, setErr] = useState<string | null>(null);
 
@@ -231,12 +269,12 @@ function Recommendations() {
   }, []);
 
   return (
-    <Page title="Recommendations" subtitle="Senaste rekommendationer från workern.">
+    <Page title={t("recommendationsTitle")} subtitle={t("recommendationsSubtitle")}>
       {err && <ErrorBox text={err} />}
       <CardTable
-        headers={["Tid", "Device", "Model", "Type", "Status", "Reason"]}
+        headers={[t("time"), t("device"), t("model"), t("type"), t("status"), t("reason")]}
         rows={items.map((r) => [
-          new Date(r.createdAt).toLocaleString(),
+          new Date(r.createdAt).toLocaleString(locale),
           <span className="font-medium text-millet-text" key={r.id}>{r.device.qrCodeId || r.device.serialNumber}</span>,
           <span className="text-millet-text" key={`${r.id}-model`}>{r.device.model.displayName}</span>,
           <span className="text-millet-text" key={`${r.id}-type`}>{r.type}</span>,
@@ -249,6 +287,7 @@ function Recommendations() {
 }
 
 function ServiceHistory() {
+  const { locale, t } = useI18n();
   const [items, setItems] = useState<ServiceEntry[]>([]);
   const [err, setErr] = useState<string | null>(null);
 
@@ -266,12 +305,12 @@ function ServiceHistory() {
   }, []);
 
   return (
-    <Page title="Service" subtitle="Servicehistorik per device (senaste 200).">
+    <Page title={t("serviceTitle")} subtitle={t("serviceSubtitle")}>
       {err && <ErrorBox text={err} />}
       <CardTable
-        headers={["Tid", "Device", "Model", "Customer", "Action", "Notes"]}
+        headers={[t("time"), t("device"), t("model"), t("customer"), t("action"), t("notes")]}
         rows={items.map((s) => [
-          new Date(s.serviceDate).toLocaleDateString(),
+          new Date(s.serviceDate).toLocaleDateString(locale),
           <span className="font-medium text-millet-text" key={s.id}>{s.device.qrCodeId || s.device.serialNumber}</span>,
           <span className="text-millet-text" key={`${s.id}-model`}>{s.device.model.displayName}</span>,
           <span className="text-millet-text" key={`${s.id}-cust`}>{s.device.site?.customer?.name ?? "-"}</span>,
@@ -284,6 +323,7 @@ function ServiceHistory() {
 }
 
 function SizingTool() {
+  const { t } = useI18n();
   const [load, setLoad] = useState("1.5");
   const [backupHours, setBackupHours] = useState("4");
   const [temperature, setTemperature] = useState("20");
@@ -307,21 +347,21 @@ function SizingTool() {
   }
 
   return (
-    <Page title="Sizing" subtitle="Enkel dimensionering (demo).">
+    <Page title={t("sizingTitle")} subtitle={t("sizingSubtitle")}>
       {err && <ErrorBox text={err} />}
       <div className="card p-4 space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <Field label="Load (kW)">
+          <Field label={t("loadKw")}>
             <input className="input" value={load} onChange={(e) => setLoad(e.target.value)} />
           </Field>
-          <Field label="Backup hours">
+          <Field label={t("backupHours")}>
             <input className="input" value={backupHours} onChange={(e) => setBackupHours(e.target.value)} />
           </Field>
-          <Field label="Temperature (°C)">
+          <Field label={t("temperatureC")}>
             <input className="input" value={temperature} onChange={(e) => setTemperature(e.target.value)} />
           </Field>
         </div>
-        <button onClick={submit} className="btn btn-primary">Beräkna</button>
+        <button onClick={submit} className="btn btn-primary">{t("calculate")}</button>
         {result && (
           <pre className="text-sm rounded-lg border border-millet-border bg-millet-surface p-3 overflow-auto text-millet-text">
             {JSON.stringify(result, null, 2)}
@@ -332,7 +372,7 @@ function SizingTool() {
   );
 }
 
-function Page({ title, subtitle, children }: any) {
+function Page({ title, subtitle, children }: { title: string; subtitle: string; children: ReactNode }) {
   return (
     <div className="max-w-millet mx-auto p-4 sm:p-6">
       <h1 className="text-2xl font-semibold text-millet-text">{title}</h1>
@@ -342,7 +382,7 @@ function Page({ title, subtitle, children }: any) {
   );
 }
 
-function Field({ label, children }: any) {
+function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
     <label className="block">
       <div className="text-sm text-millet-text mb-1">{label}</div>
@@ -377,13 +417,14 @@ function CardTable({ headers, rows }: { headers: string[]; rows: any[][] }) {
 }
 
 function ErrorBox({ text }: { text: string }) {
+  const { t } = useI18n();
   const isFetchError = text.toLowerCase().includes("failed to fetch");
   return (
     <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-amber-900">
       <div>{text}</div>
       {isFetchError && (
         <div className="mt-1 text-xs text-amber-900/80">
-          Kan inte nå API: {API_BASE}. Kontrollera att API:t kör och att VITE_API_BASE är rätt.
+          {t("apiUnavailable", { apiBase: API_BASE })}
         </div>
       )}
     </div>
@@ -391,9 +432,11 @@ function ErrorBox({ text }: { text: string }) {
 }
 
 function StatusBadge({ status }: { status: string }) {
+  const { t } = useI18n();
   const base = "inline-flex items-center rounded-full px-2 py-0.5 text-xs border";
-  if (status === "ACCEPTED") return <span className={`${base} bg-millet-surface border-millet-border text-millet-text`}>ACCEPTED</span>;
-  if (status === "REJECTED") return <span className={`${base} bg-red-50 border-red-200 text-red-800`}>REJECTED</span>;
-  if (status === "PROCESSING") return <span className={`${base} bg-yellow-50 border-yellow-300 text-yellow-900`}>PROCESSING</span>;
+  if (status === "ACCEPTED") return <span className={`${base} bg-millet-surface border-millet-border text-millet-text`}>{t("accepted")}</span>;
+  if (status === "REJECTED") return <span className={`${base} bg-red-50 border-red-200 text-red-800`}>{t("rejected")}</span>;
+  if (status === "PROCESSING") return <span className={`${base} bg-yellow-50 border-yellow-300 text-yellow-900`}>{t("processing")}</span>;
+  if (status === "NEW") return <span className={`${base} bg-millet-surface border-millet-border text-millet-muted`}>{t("new")}</span>;
   return <span className={`${base} bg-millet-surface border-millet-border text-millet-muted`}>{status}</span>;
 }

@@ -60,7 +60,7 @@ export async function processIngressEvent(prisma: PrismaClient, ingressId: strin
           deviceId: device.id,
           serviceDate: from,
           action: "SERVICE",
-          notes: "Serviceår rapporterat från PowerWatch"
+          notes: "Serviceår rapporterat från PowerRegister"
         }
       });
     }
