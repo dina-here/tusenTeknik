@@ -2,9 +2,9 @@
 
 Demo-länkar:
 - PowerAdmin: https://tusenteknik-admin-ui.onrender.com
-- PowerWatch: https://tusenteknik-powerwatch-ui.onrender.com
+- PowerRegister: https://tusenteknik-powerwatch-ui.onrender.com
 
-En fullstack-demo som simulerar ett modernt backend-system för hantering av batteribackuper, fält-rapportering (PowerWatch), dimensionering och realtidsdata.
+En fullstack-demo som simulerar ett modernt backend-system för hantering av batteribackuper, fält-rapportering (PowerRegister), dimensionering och realtidsdata.
 
 Projektet är byggt för att demonstrera:
 
@@ -26,7 +26,7 @@ apps/
 api/ -> NestJS REST API
 worker/ -> Async processor (staging → main DB)
 admin-ui/ -> PowerAdmin (React)
-powerwatch-ui/ -> Offline-first PWA (simulerar Android-app)
+powerwatch-ui/ -> PowerRegister, offline-first PWA (simulerar Android-app)
 
 packages/
 shared/ -> Delade Zod-scheman
@@ -46,9 +46,9 @@ Teknikstack:
 
 ---
 
-# 🔁 Eventflöde (PowerWatch)
+# 🔁 Eventflöde (PowerRegister)
 
-1. Fälttekniker rapporterar via PowerWatch (offline möjligt)
+1. Fälttekniker rapporterar via PowerRegister (offline möjligt)
 2. Events lagras lokalt
 3. Batch skickas till API
 4. API sparar i `IngressEvent` (UNIQUE eventId → idempotens)
@@ -143,7 +143,7 @@ pnpm dev
 
 ## 5. Lokala env-filer
 - Root: .env.local (för app-URLer)
-- Prisma: prisma/.env.local (DATABASE_URL, DIRECT_URL)
+- Prisma: prisma/.env.local (DATABASE_URL)
 
 Tips: skapa även .env.example och prisma/.env.example för dokumentation.
 
@@ -156,33 +156,33 @@ Använd samma GitHub-repo för alla services. Sätt Root Directory per service.
 
 ### API (Web Service)
 - Root Directory: (tomt)
-- Build Command: pnpm install && pnpm build
+- Build Command: pnpm install && pnpm --filter ./prisma prisma:generate && pnpm --filter ./prisma prisma migrate deploy && pnpm --filter ./prisma prisma db seed && pnpm build
 - Start Command: node apps/api/dist/main.js
 - Environment:
 	- DATABASE_URL
-	- DIRECT_URL
 
 ### Worker (Background Worker)
 - Root Directory: (tomt)
-- Build Command: pnpm install && pnpm --filter ./apps/worker build
+- Build Command: pnpm install && pnpm --filter ./prisma prisma:generate && pnpm --filter ./apps/worker build
 - Start Command: node apps/worker/dist/index.js
 - Environment:
 	- DATABASE_URL
-	- DIRECT_URL
 
 ### Admin UI (Static Site)
-- Root Directory: admin-ui
-- Build Command: pnpm install && pnpm -r build
-- Publish Directory: dist
+- Root Directory: (tomt)
+- Build Command: pnpm install && pnpm --filter ./apps/admin-ui build
+- Publish Directory: apps/admin-ui/dist
 - Environment:
 	- VITE_API_BASE = https://<din-api>.onrender.com
 
 ### PowerWatch UI (Static Site)
-- Root Directory: powerwatch-ui
-- Build Command: pnpm install && pnpm -r build
-- Publish Directory: dist
+- Root Directory: (tomt)
+- Build Command: pnpm install && pnpm --filter ./apps/powerwatch-ui build
+- Publish Directory: apps/powerwatch-ui/dist
 - Environment:
 	- VITE_API_BASE = https://<din-api>.onrender.com
+
+Obs: Prisma v7 använder `prisma/prisma.config.ts` för datasource-konfiguration. `DIRECT_URL` används inte längre i detta projekt.
 
 ## 2. Viktigt om API_BASE
 PowerWatch UI och Admin UI behöver VITE_API_BASE satt i Render. Annars pekar de mot localhost och synk fungerar inte.
@@ -198,7 +198,7 @@ http://localhost:3000/health
 Admin UI:
 http://localhost:5173
 
-PowerWatch UI:
+PowerRegister UI:
 http://localhost:5174
 
 ---

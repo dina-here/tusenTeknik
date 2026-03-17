@@ -1,8 +1,15 @@
+import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
 import { processIngressEvent } from "./processor";
 import { execSync } from "child_process";
 
-const prisma = new PrismaClient();
+const datasourceUrl = process.env.DATABASE_URL;
+if (!datasourceUrl) {
+  throw new Error("DATABASE_URL is missing. Set DATABASE_URL in environment variables.");
+}
+
+const adapter = new PrismaPg({ connectionString: datasourceUrl });
+const prisma = new PrismaClient({ adapter });
 
 /**
  * Run migrations before starting the worker

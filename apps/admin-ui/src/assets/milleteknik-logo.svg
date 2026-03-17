@@ -1,6 +1,8 @@
-<svg width="320" height="88" viewBox="0 0 320 88" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="320" height="88" rx="8" fill="white"/>
-  <text x="12" y="44" fill="#111111" font-family="Helvetica, Arial, sans-serif" font-size="38" font-weight="700" letter-spacing="-1.2">milleteknik</text>
-  <text x="12" y="66" fill="#787878" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="700" letter-spacing="0.8">SVENSKTILLVERKAD RESERVKRAFT</text>
-  <path d="M270 20 C274 12 278 12 282 20 C286 28 290 28 294 20 C298 12 302 12 306 20" stroke="#2a2a2a" stroke-width="2.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<svg width="247" height="88" viewBox="0 0 247 88" fill="none" xmlns="http://www.w3.org/2000/svg" shape-rendering="geometricPrecision" text-rendering="geometricPrecision">
+  <rect width="247" height="88" fill="white"/>
+  <text x="12" y="52" fill="#1E1F22" font-family="Arial Black, Arial, Helvetica, sans-serif" font-size="53" font-weight="900" letter-spacing="-3.2" transform="scale(0.62 1)">milleteknik</text>
+  <text x="12" y="72" fill="#7A7D82" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="700" letter-spacing="1.05">SVENSKTILLVERKAD RESERVKRAFT</text>
+
+  <circle cx="231" cy="18" r="8" fill="#F2C531"/>
+  <path d="M225.8 18.2C226.8 16.4 227.9 16.4 228.9 18.2C229.9 20 231 20 232 18.2C233 16.4 234.1 16.4 235.1 18.2" stroke="#1F2328" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
