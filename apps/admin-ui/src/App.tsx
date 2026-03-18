@@ -1,4 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
+import { jsPDF } from "jspdf";
 import { apiGet, apiPost, API_BASE } from "./api/client";
 import milleteknikLogo from "./assets/milleteknik-logo.svg";
 import { languageOptions, useI18n, type LanguageCode } from "./i18n";
@@ -28,6 +29,14 @@ type ServiceEntry = {
   action: string;
   notes?: string | null;
   device: { qrCodeId: string; serialNumber: string; model: { displayName: string }; site?: { customer?: { name?: string | null } | null } | null };
+};
+
+type SizingResult = {
+  sizingRequestId: string;
+  recommendedModelSku: string;
+  batteryCapacityAh: number;
+  safetyMargin: number;
+  algorithmVersion: string;
 };
 
 type TabKey = "inbox" | "devices" | "recommendations" | "sizing" | "service";
@@ -323,11 +332,11 @@ function ServiceHistory() {
 }
 
 function SizingTool() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [load, setLoad] = useState("1.5");
   const [backupHours, setBackupHours] = useState("4");
   const [temperature, setTemperature] = useState("20");
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<SizingResult | null>(null);
   const [err, setErr] = useState<string | null>(null);
 
   async function submit() {
@@ -339,11 +348,46 @@ function SizingTool() {
         backupHours: Number(backupHours),
         temperature: Number(temperature)
       };
-      const res = await apiPost<any>("/api/sizing", payload);
+      const res = await apiPost<SizingResult>("/api/sizing", payload);
       setResult(res);
     } catch (e: any) {
       setErr(String(e));
     }
+  }
+
+  function savePdf() {
+    if (!result) return;
+
+    const generatedAt = new Date();
+    const generatedAtText = generatedAt.toLocaleString(locale);
+    const doc = new jsPDF({ unit: "pt", format: "a4" });
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.text(t("sizingReportTitle"), 40, 50);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(11);
+    doc.text(`${t("reportDate")}: ${generatedAtText}`, 40, 75);
+
+    doc.setFont("helvetica", "bold");
+    doc.text("Input", 40, 105);
+    doc.setFont("helvetica", "normal");
+    doc.text(`${t("loadKw")}: ${load}`, 40, 125);
+    doc.text(`${t("backupHours")}: ${backupHours}`, 40, 145);
+    doc.text(`${t("temperatureC")}: ${temperature}`, 40, 165);
+
+    doc.setFont("helvetica", "bold");
+    doc.text("Result", 40, 200);
+    doc.setFont("helvetica", "normal");
+    doc.text(`sizingRequestId: ${result.sizingRequestId}`, 40, 220);
+    doc.text(`recommendedModelSku: ${result.recommendedModelSku}`, 40, 240);
+    doc.text(`batteryCapacityAh: ${result.batteryCapacityAh}`, 40, 260);
+    doc.text(`safetyMargin: ${result.safetyMargin}`, 40, 280);
+    doc.text(`algorithmVersion: ${result.algorithmVersion}`, 40, 300);
+
+    const fileDate = generatedAt.toISOString().slice(0, 10);
+    doc.save(`sizing-report-${fileDate}.pdf`);
   }
 
   return (
@@ -361,7 +405,12 @@ function SizingTool() {
             <input className="input" value={temperature} onChange={(e) => setTemperature(e.target.value)} />
           </Field>
         </div>
-        <button onClick={submit} className="btn btn-primary">{t("calculate")}</button>
+        <div className="flex flex-wrap items-center gap-2">
+          <button onClick={submit} className="btn btn-primary">{t("calculate")}</button>
+          {result && (
+            <button onClick={savePdf} className="btn btn-ghost">{t("savePdf")}</button>
+          )}
+        </div>
         {result && (
           <pre className="text-sm rounded-lg border border-millet-border bg-millet-surface p-3 overflow-auto text-millet-text">
             {JSON.stringify(result, null, 2)}
