@@ -3,6 +3,8 @@ import { PrismaClient } from "@prisma/client";
 import { sanitizeInput, processMlAnalysisJob } from "./ml-job.processor";
 import { processIngressEvent } from "./processor";
 import { execSync } from "child_process";
+import { existsSync } from "fs";
+import { resolve } from "path";
 
 const datasourceUrl = process.env.DATABASE_URL;
 if (!datasourceUrl) {
@@ -18,8 +20,7 @@ const prisma = new PrismaClient({ adapter });
 async function runMigrations() {
   try {
     console.log("Running Prisma migrations...");
-    // Run from prisma workspace (from apps/worker/dist -> go up 3 levels -> prisma)
-    const prismaCwd = process.env.PRISMA_WORKSPACE_DIR || "/opt/render/project/src/prisma";
+    const prismaCwd = resolvePrismaWorkspaceDir();
     console.log(`[DEBUG] Running migrations from: ${prismaCwd}`);
     console.log(`[DEBUG] DATABASE_URL set: ${!!process.env.DATABASE_URL}`);
     execSync("pnpm prisma migrate deploy", {
@@ -121,4 +122,23 @@ main().catch((e) => {
 
 function sleep(ms: number) {
   return new Promise((r) => setTimeout(r, ms));
+}
+
+function resolvePrismaWorkspaceDir() {
+  const explicit = process.env.PRISMA_WORKSPACE_DIR;
+  if (explicit && existsSync(explicit)) return explicit;
+
+  const candidates = [
+    // Render default
+    "/opt/render/project/src/prisma",
+    // Local dev: start command from apps/worker
+    resolve(process.cwd(), "../../prisma"),
+    // Local dev: start command from repo root
+    resolve(process.cwd(), "prisma"),
+    // Compiled dist fallback
+    resolve(__dirname, "../../../prisma")
+  ];
+
+  const found = candidates.find((candidate) => existsSync(candidate));
+  return found ?? candidates[0];
 }

@@ -4,11 +4,13 @@ import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
 import { AllExceptionsFilter } from "./common/filters/all-exceptions.filter";
 import { execSync } from "child_process";
+import { existsSync } from "fs";
+import { resolve } from "path";
 
 async function runMigrations() {
   try {
     console.log("Running Prisma migrations...");
-    const prismaCwd = process.env.PRISMA_WORKSPACE_DIR || "/opt/render/project/src/prisma";
+    const prismaCwd = resolvePrismaWorkspaceDir();
     console.log(`[DEBUG] Running migrations from: ${prismaCwd}`);
     console.log(`[DEBUG] DATABASE_URL set: ${!!process.env.DATABASE_URL}`);
     execSync("pnpm prisma migrate deploy", {
@@ -48,3 +50,22 @@ async function bootstrap() {
 }
 
 bootstrap();
+
+function resolvePrismaWorkspaceDir() {
+  const explicit = process.env.PRISMA_WORKSPACE_DIR;
+  if (explicit && existsSync(explicit)) return explicit;
+
+  const candidates = [
+    // Render default
+    "/opt/render/project/src/prisma",
+    // Local dev: start command from apps/api
+    resolve(process.cwd(), "../../prisma"),
+    // Local dev: start command from repo root
+    resolve(process.cwd(), "prisma"),
+    // Compiled dist fallback
+    resolve(__dirname, "../../../prisma")
+  ];
+
+  const found = candidates.find((candidate) => existsSync(candidate));
+  return found ?? candidates[0];
+}
