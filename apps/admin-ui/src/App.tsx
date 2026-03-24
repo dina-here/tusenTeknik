@@ -3,6 +3,7 @@ import { jsPDF } from "jspdf";
 import { apiGet, apiPost, API_BASE } from "./api/client";
 import milleteknikLogo from "./assets/milleteknik-logo.svg";
 import { languageOptions, useI18n, type LanguageCode } from "./i18n";
+import { PowerwatchAnalysisPanel } from "./powerwatch/PowerwatchAnalysisPanel";
 
 type IngressEvent = { id: string; deviceRef: string; status: string; receivedAt: string; eventId: string };
 type Device = {
@@ -39,7 +40,7 @@ type SizingResult = {
   algorithmVersion: string;
 };
 
-type TabKey = "inbox" | "devices" | "recommendations" | "sizing" | "service";
+type TabKey = "inbox" | "devices" | "recommendations" | "powerwatch" | "sizing" | "service";
 type RowStatusKey = "chooseDeviceStatus" | "mergedStatus" | "createdStatus";
 
 export function App() {
@@ -51,6 +52,7 @@ export function App() {
       {tab === "inbox" && <Inbox />}
       {tab === "devices" && <Devices />}
       {tab === "recommendations" && <Recommendations />}
+      {tab === "powerwatch" && <Powerwatch />}
       {tab === "sizing" && <SizingTool />}
       {tab === "service" && <ServiceHistory />}
     </div>
@@ -78,6 +80,7 @@ function Topbar({ tab, setTab }: { tab: TabKey; setTab: (t: TabKey) => void }) {
           <NavButton active={tab === "inbox"} onClick={() => setTab("inbox")}>{t("inbox")}</NavButton>
           <NavButton active={tab === "devices"} onClick={() => setTab("devices")}>{t("devices")}</NavButton>
           <NavButton active={tab === "recommendations"} onClick={() => setTab("recommendations")}>{t("recommendations")}</NavButton>
+          <NavButton active={tab === "powerwatch"} onClick={() => setTab("powerwatch")}>{t("powerwatch")}</NavButton>
           <NavButton active={tab === "sizing"} onClick={() => setTab("sizing")}>{t("sizing")}</NavButton>
           <NavButton active={tab === "service"} onClick={() => setTab("service")}>{t("service")}</NavButton>
           <LanguageSwitcher />
@@ -291,6 +294,16 @@ function Recommendations() {
           <span className="text-millet-muted" key={`${r.id}-reason`}>{r.reason}</span>
         ])}
       />
+    </Page>
+  );
+}
+
+function Powerwatch() {
+  const { t } = useI18n();
+
+  return (
+    <Page title={t("powerwatchPageTitle")} subtitle={t("powerwatchPageSubtitle")}>
+      <PowerwatchAnalysisPanel />
     </Page>
   );
 }
