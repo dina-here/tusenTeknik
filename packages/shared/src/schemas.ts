@@ -51,31 +51,3 @@ export const SizingInputSchema = z.object({
   backupHours: z.number().positive(),
   temperature: z.number()
 });
-
-export const PowerwatchMlTargetStrategySchema = z.enum([
-  "failure_within_6_months",
-  "remaining_runtime_minutes"
-]);
-
-export const PowerwatchMlModelNameSchema = z.enum([
-  "logistic_regression",
-  "random_forest",
-  "gradient_boosting",
-  "linear_regression",
-  "random_forest_regressor",
-  "gradient_boosting_regressor"
-]);
-
-export const PowerwatchMlJobRequestSchema = z.object({
-  datasetName: z.string().min(1).max(120).optional(),
-  targetStrategy: PowerwatchMlTargetStrategySchema,
-  randomSeed: z.number().int().min(1).max(999_999).optional(),
-  testSize: z.number().min(0.1).max(0.4).optional(),
-  modelNames: z.array(PowerwatchMlModelNameSchema).min(1).max(6).optional(),
-  deviceFileName: z.string().min(1).max(240).optional(),
-  telemetryFileName: z.string().min(1).max(240).optional(),
-  serviceFileName: z.string().min(1).max(240).optional(),
-  deviceCsv: z.string().min(1),
-  telemetryCsv: z.string().min(1),
-  serviceCsv: z.string().optional()
-});

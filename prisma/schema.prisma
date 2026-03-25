@@ -25,17 +25,6 @@ enum RecommendationStatus {
   ACK
 }
 
-enum AnalysisJobStatus {
-  QUEUED
-  RUNNING
-  SUCCEEDED
-  FAILED
-}
-
-enum AnalysisJobType {
-  POWERWATCH_TRAIN_EVALUATE
-}
-
 model Partner {
   id        String   @id @default(cuid())
   name      String
@@ -202,16 +191,4 @@ model SizingResult {
   safetyMargin        Float
   algorithmVersion    String
   createdAt           DateTime @default(now())
-}
-
-model AnalysisJob {
-  id           String @id @default(cuid())
-  jobType      AnalysisJobType @default(POWERWATCH_TRAIN_EVALUATE)
-  status       AnalysisJobStatus @default(QUEUED)
-  input        Json
-  result       Json?
-  errorMessage String?
-  requestedAt  DateTime @default(now())
-  startedAt    DateTime?
-  finishedAt   DateTime?
 }
