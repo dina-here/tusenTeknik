@@ -103,6 +103,19 @@ export function PowerwatchAnalysisPanel() {
     const refresh = async () => {
       try {
         const nextJobs = await apiGet<AnalysisJob[]>("/api/powerwatch/ml/jobs");
+        if (disposed) return;
+        setJobs(nextJobs);
+        setSelectedJobId((current) => current ?? nextJobs[0]?.id ?? null);
+      } catch (error) {
+        if (!disposed) {
+          setErr(String(error));
+        }
+      }
+    };
+
+    refresh();
+    const timer = window.setInterval(refresh, 3000);
+    return () => {
       disposed = true;
       window.clearInterval(timer);
     };
