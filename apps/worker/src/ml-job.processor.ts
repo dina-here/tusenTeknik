@@ -81,6 +81,19 @@ async function runPythonJob(scriptPath: string, payload: Record<string, unknown>
 
     let stdout = "";
     let stderr = "";
+    let settled = false;
+
+    const resolveOnce = (result: PythonJobResult) => {
+      if (settled) return;
+      settled = true;
+      resolvePromise(result);
+    };
+
+    const rejectOnce = (error: Error) => {
+      if (settled) return;
+      settled = true;
+      rejectPromise(error);
+    };
 
     child.stdout.on("data", (chunk) => {
       stdout += chunk.toString();
@@ -91,25 +104,44 @@ async function runPythonJob(scriptPath: string, payload: Record<string, unknown>
     });
 
     child.on("error", (error) => {
-      rejectPromise(new Error(`Kunde inte starta Python-processen: ${error.message}`));
+      rejectOnce(new Error(`Kunde inte starta Python-processen: ${error.message}`));
+    });
+
+    child.stdin.on("error", (error) => {
+      const details = stderr.trim() || stdout.trim();
+      rejectOnce(
+        new Error(
+          details
+            ? `Python-processen avbröts innan indata kunde skickas. ${details}`
+            : `Python-processen avbröts innan indata kunde skickas: ${error.message}`
+        )
+      );
     });
 
     child.on("close", (code) => {
       if (code !== 0) {
-        rejectPromise(new Error(stderr.trim() || stdout.trim() || `Python-processen avslutades med kod ${code}`));
+        rejectOnce(new Error(stderr.trim() || stdout.trim() || `Python-processen avslutades med kod ${code}`));
         return;
       }
 
       try {
         const parsed = JSON.parse(stdout) as PythonJobResult;
-        resolvePromise(parsed);
+        resolveOnce(parsed);
       } catch (error) {
-        rejectPromise(new Error(`Ogiltigt JSON-svar från Python-jobbet. ${stderr || String(error)}`));
+        rejectOnce(new Error(`Ogiltigt JSON-svar från Python-jobbet. ${stderr || String(error)}`));
       }
     });
 
-    child.stdin.write(JSON.stringify(payload));
-    child.stdin.end();
+    try {
+      child.stdin.write(JSON.stringify(payload));
+      child.stdin.end();
+    } catch (error) {
+      rejectOnce(
+        new Error(
+          `Kunde inte skriva jobbdata till Python-processen: ${error instanceof Error ? error.message : String(error)}`
+        )
+      );
+    }
   });
 }
 
