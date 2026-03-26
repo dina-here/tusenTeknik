@@ -1,4 +1,5 @@
 import "reflect-metadata";
+import { json, urlencoded } from "express";
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
 import { AllExceptionsFilter } from "./common/filters/all-exceptions.filter";
@@ -29,6 +30,8 @@ async function bootstrap() {
     logger: ["log", "error", "warn"]
   });
 
+  app.use(json({ limit: "10mb" }));
+  app.use(urlencoded({ extended: true, limit: "10mb" }));
   app.useGlobalFilters(new AllExceptionsFilter());
 
   app.enableCors({

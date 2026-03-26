@@ -1,5 +1,6 @@
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
+import { sanitizeInput, processMlAnalysisJob } from "./ml-job.processor";
 import { processIngressEvent } from "./processor";
 import { execSync } from "child_process";
 import { existsSync } from "fs";
@@ -45,6 +46,39 @@ async function runMigrations() {
 async function loop() {
   // eslint-disable-next-line no-constant-condition
   while (true) {
+    const mlJob = await prisma.analysisJob.findFirst({
+      where: { status: "QUEUED" },
+      orderBy: { requestedAt: "asc" }
+    });
+
+    if (mlJob) {
+      await prisma.analysisJob.update({
+        where: { id: mlJob.id },
+        data: {
+          status: "RUNNING",
+          startedAt: new Date(),
+          errorMessage: null
+        }
+      });
+
+      try {
+        await processMlAnalysisJob(prisma, mlJob.id);
+      } catch (e) {
+        console.error("ML worker error:", e);
+        await prisma.analysisJob.update({
+          where: { id: mlJob.id },
+          data: {
+            status: "FAILED",
+            input: sanitizeInput(mlJob.input) as never,
+            errorMessage: e instanceof Error ? e.message : "ML-jobbet misslyckades.",
+            finishedAt: new Date()
+          }
+        });
+      }
+
+      continue;
+    }
+
     const next = await prisma.ingressEvent.findFirst({
       where: { status: "RECEIVED" },
       orderBy: { receivedAt: "asc" }
