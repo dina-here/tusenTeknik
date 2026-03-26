@@ -71,21 +71,20 @@ type AnalysisJob = {
   result?: AnalysisResult;
 };
 
-const targetOptions: { value: TargetStrategy; label: string; helper: string }[] = [
-  {
-    value: "failure_within_6_months",
-    label: "failure_within_6_months",
-    helper: "Klassificering. Rekommenderas som första steg för serviceplanering."
-  },
-  {
-    value: "remaining_runtime_minutes",
-    label: "remaining_runtime_minutes",
-    helper: "Regression. Bra för dimensionering och UPS-scenarion."
-  }
-];
-
 export function PowerwatchAnalysisPanel() {
   const { locale, t } = useI18n();
+  const targetOptions: { value: TargetStrategy; label: string; helper: string }[] = [
+    {
+      value: "failure_within_6_months",
+      label: "failure_within_6_months",
+      helper: t("powerwatchTargetFailureHelper")
+    },
+    {
+      value: "remaining_runtime_minutes",
+      label: "remaining_runtime_minutes",
+      helper: t("powerwatchTargetRuntimeHelper")
+    }
+  ];
   const [jobs, setJobs] = useState<AnalysisJob[]>([]);
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [datasetName, setDatasetName] = useState("PowerWatch demo import");
@@ -104,19 +103,6 @@ export function PowerwatchAnalysisPanel() {
     const refresh = async () => {
       try {
         const nextJobs = await apiGet<AnalysisJob[]>("/api/powerwatch/ml/jobs");
-        if (disposed) return;
-        setJobs(nextJobs);
-        setSelectedJobId((current) => current ?? nextJobs[0]?.id ?? null);
-      } catch (error) {
-        if (!disposed) {
-          setErr(String(error));
-        }
-      }
-    };
-
-    refresh();
-    const timer = window.setInterval(refresh, 3000);
-    return () => {
       disposed = true;
       window.clearInterval(timer);
     };
@@ -138,9 +124,9 @@ export function PowerwatchAnalysisPanel() {
 
     try {
       const [deviceCsv, telemetryCsv, serviceCsv] = await Promise.all([
-        readFileAsText(deviceFile),
-        readFileAsText(telemetryFile),
-        serviceFile ? readFileAsText(serviceFile) : Promise.resolve(undefined)
+        readFileAsText(deviceFile, t),
+        readFileAsText(telemetryFile, t),
+        serviceFile ? readFileAsText(serviceFile, t) : Promise.resolve(undefined)
       ]);
 
       const createdJob = await apiPost<AnalysisJob>("/api/powerwatch/ml/jobs", {
@@ -229,8 +215,8 @@ export function PowerwatchAnalysisPanel() {
           <div className="font-medium text-millet-text">{t("powerwatchDefaultModels")}</div>
           <div className="mt-1">
             {targetStrategy === "failure_within_6_months"
-              ? "Logistic Regression, Random Forest och Gradient Boosting jämförs automatiskt."
-              : "Linear Regression, Random Forest Regressor och Gradient Boosting Regressor jämförs automatiskt."}
+              ? t("powerwatchModelSetClassification")
+              : t("powerwatchModelSetRegression")}
           </div>
         </div>
 
@@ -414,6 +400,8 @@ function FileField({
   onChange: (file: File | null) => void;
   required?: boolean;
 }) {
+  const { t } = useI18n();
+
   return (
     <label className="block rounded-xl border border-millet-border p-3">
       <div className="text-sm text-millet-text mb-2">{label}</div>
@@ -423,7 +411,7 @@ function FileField({
         onChange={(event) => onChange(event.target.files?.[0] ?? null)}
       />
       <div className="mt-2 text-xs text-millet-muted">
-        {file ? file.name : required ? "CSV krävs" : "Valfri CSV"}
+        {file ? file.name : required ? t("powerwatchRequiredCsv") : t("powerwatchOptionalCsv")}
       </div>
     </label>
   );
@@ -452,18 +440,19 @@ function InlineError({ text }: { text: string }) {
 }
 
 function MlStatusBadge({ status }: { status: JobStatus }) {
+  const { t } = useI18n();
   const base = "inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium";
 
   if (status === "SUCCEEDED") {
-    return <span className={`${base} border-emerald-200 bg-emerald-50 text-emerald-800`}>SUCCEEDED</span>;
+    return <span className={`${base} border-emerald-200 bg-emerald-50 text-emerald-800`}>{t("jobSucceeded")}</span>;
   }
   if (status === "FAILED") {
-    return <span className={`${base} border-red-200 bg-red-50 text-red-800`}>FAILED</span>;
+    return <span className={`${base} border-red-200 bg-red-50 text-red-800`}>{t("jobFailed")}</span>;
   }
   if (status === "RUNNING") {
-    return <span className={`${base} border-yellow-300 bg-yellow-50 text-yellow-900`}>RUNNING</span>;
+    return <span className={`${base} border-yellow-300 bg-yellow-50 text-yellow-900`}>{t("jobRunning")}</span>;
   }
-  return <span className={`${base} border-millet-border bg-millet-surface text-millet-text`}>QUEUED</span>;
+  return <span className={`${base} border-millet-border bg-millet-surface text-millet-text`}>{t("jobQueued")}</span>;
 }
 
 function formatMetric(value: number) {
@@ -483,11 +472,11 @@ function formatNamedMetric(entry?: [string, number | null]) {
   return `${name}: ${formatMetric(value)}`;
 }
 
-function readFileAsText(file: File) {
+function readFileAsText(file: File, t: (key: string, params?: Record<string, string | number>) => string) {
   return new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(String(reader.result ?? ""));
-    reader.onerror = () => reject(new Error(`Kunde inte läsa filen ${file.name}.`));
+    reader.onerror = () => reject(new Error(t("powerwatchFileReadError", { fileName: file.name })));
     reader.readAsText(file, "utf-8");
   });
 }

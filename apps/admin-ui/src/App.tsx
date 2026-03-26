@@ -61,6 +61,7 @@ export function App() {
 
 function Topbar({ tab, setTab }: { tab: TabKey; setTab: (t: TabKey) => void }) {
   const { t } = useI18n();
+  const subtitle = t("appSubtitle");
 
   return (
     <div className="border-b border-millet-border bg-white">
@@ -73,7 +74,7 @@ function Topbar({ tab, setTab }: { tab: TabKey; setTab: (t: TabKey) => void }) {
           />
           <div>
             <div className="text-lg font-semibold text-millet-text">{t("appTitle")}</div>
-            <div className="text-sm text-millet-muted">{t("appSubtitle")}</div>
+            {subtitle ? <div className="text-sm text-millet-muted">{subtitle}</div> : null}
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2 sm:justify-end">

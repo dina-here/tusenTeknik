@@ -46,6 +46,34 @@ async function runMigrations() {
 async function loop() {
   // eslint-disable-next-line no-constant-condition
   while (true) {
+    const next = await prisma.ingressEvent.findFirst({
+      where: { status: "RECEIVED" },
+      orderBy: { receivedAt: "asc" }
+    });
+
+    if (next) {
+      await prisma.ingressEvent.update({
+        where: { id: next.id },
+        data: { status: "PROCESSING" }
+      });
+
+      try {
+        await processIngressEvent(prisma, next.id);
+      } catch (e) {
+        console.error("Worker error:", e);
+        await prisma.ingressEvent.update({
+          where: { id: next.id },
+          data: {
+            status: "REJECTED",
+            validationErrors: { message: "Worker failed", hint: "Se worker-loggar" },
+            processedAt: new Date()
+          }
+        });
+      }
+
+      continue;
+    }
+
     const mlJob = await prisma.analysisJob.findFirst({
       where: { status: "QUEUED" },
       orderBy: { requestedAt: "asc" }
@@ -79,34 +107,7 @@ async function loop() {
       continue;
     }
 
-    const next = await prisma.ingressEvent.findFirst({
-      where: { status: "RECEIVED" },
-      orderBy: { receivedAt: "asc" }
-    });
-
-    if (!next) {
-      await sleep(1500);
-      continue;
-    }
-
-    await prisma.ingressEvent.update({
-      where: { id: next.id },
-      data: { status: "PROCESSING" }
-    });
-
-    try {
-      await processIngressEvent(prisma, next.id);
-    } catch (e) {
-      console.error("Worker error:", e);
-      await prisma.ingressEvent.update({
-        where: { id: next.id },
-        data: {
-          status: "REJECTED",
-          validationErrors: { message: "Worker failed", hint: "Se worker-loggar" },
-          processedAt: new Date()
-        }
-      });
-    }
+    await sleep(1500);
   }
 }
 
