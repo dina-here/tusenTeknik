@@ -40,6 +40,21 @@ type SizingResult = {
   algorithmVersion: string;
 };
 
+type SizingNode = {
+  id: string;
+  label: string;
+  loadW: number;
+};
+
+type SizingCable = {
+  id: string;
+  fromNodeId: string;
+  toNodeId: string;
+  lengthM: number;
+  areaMm2: number;
+  label?: string;
+};
+
 type TabKey = "inbox" | "devices" | "recommendations" | "powerwatch" | "sizing" | "service";
 type RowStatusKey = "chooseDeviceStatus" | "mergedStatus" | "createdStatus";
 
@@ -73,7 +88,7 @@ function Topbar({ tab, setTab }: { tab: TabKey; setTab: (t: TabKey) => void }) {
             className="h-10 w-auto object-contain sm:h-12"
           />
           <div>
-            <div className="text-lg font-semibold text-millet-text">{t("appTitle")}</div>
+            <h1 className="text-2xl font-semibold text-millet-text whitespace-nowrap leading-tight">{t("appTitle")}</h1>
             {subtitle ? <div className="text-sm text-millet-muted">{subtitle}</div> : null}
           </div>
         </div>
@@ -352,6 +367,16 @@ function SizingTool() {
   const [temperature, setTemperature] = useState("20");
   const [result, setResult] = useState<SizingResult | null>(null);
   const [err, setErr] = useState<string | null>(null);
+  const [drawingName, setDrawingName] = useState("Passagesystem");
+  const [nodeName, setNodeName] = useState("Node");
+  const [nodeLoadW, setNodeLoadW] = useState("120");
+  const [nodes, setNodes] = useState<SizingNode[]>([]);
+  const [cables, setCables] = useState<SizingCable[]>([]);
+  const [cableFrom, setCableFrom] = useState("");
+  const [cableTo, setCableTo] = useState("");
+  const [cableLengthM, setCableLengthM] = useState("10");
+  const [cableAreaMm2, setCableAreaMm2] = useState("1");
+  const [cableLabel, setCableLabel] = useState("");
 
   async function submit() {
     setErr(null);
@@ -367,6 +392,164 @@ function SizingTool() {
     } catch (e: any) {
       setErr(String(e));
     }
+  }
+
+  async function submitFromDrawing() {
+    const totalLoadKw = getTotalLoadW(nodes) / 1000;
+    if (totalLoadKw <= 0) {
+      setErr(t("sizingNeedAtLeastOneNode"));
+      return;
+    }
+
+    setErr(null);
+    setResult(null);
+    try {
+      const payload = {
+        load: Number(totalLoadKw.toFixed(3)),
+        backupHours: Number(backupHours),
+        temperature: Number(temperature)
+      };
+      const res = await apiPost<SizingResult>("/api/sizing", payload);
+      setResult(res);
+    } catch (e: any) {
+      setErr(String(e));
+    }
+  }
+
+  function addNode() {
+    const trimmedName = nodeName.trim();
+    const parsedLoad = Number(nodeLoadW);
+    if (!trimmedName || !Number.isFinite(parsedLoad) || parsedLoad < 0) {
+      setErr(t("sizingInvalidNode"));
+      return;
+    }
+
+    const id = `n${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+    setNodes((current) => [...current, { id, label: trimmedName, loadW: parsedLoad }]);
+    setErr(null);
+  }
+
+  function removeNode(nodeId: string) {
+    setNodes((current) => current.filter((node) => node.id !== nodeId));
+    setCables((current) => current.filter((cable) => cable.fromNodeId !== nodeId && cable.toNodeId !== nodeId));
+    if (cableFrom === nodeId) setCableFrom("");
+    if (cableTo === nodeId) setCableTo("");
+  }
+
+  function addCable() {
+    const parsedLength = Number(cableLengthM);
+    const parsedArea = Number(cableAreaMm2);
+
+    if (!cableFrom || !cableTo || cableFrom === cableTo) {
+      setErr(t("sizingInvalidCable"));
+      return;
+    }
+    if (!Number.isFinite(parsedLength) || parsedLength <= 0 || !Number.isFinite(parsedArea) || parsedArea <= 0) {
+      setErr(t("sizingInvalidCable"));
+      return;
+    }
+
+    const id = `c${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+    setCables((current) => [
+      ...current,
+      {
+        id,
+        fromNodeId: cableFrom,
+        toNodeId: cableTo,
+        lengthM: parsedLength,
+        areaMm2: parsedArea,
+        label: cableLabel.trim() || undefined
+      }
+    ]);
+    setErr(null);
+  }
+
+  function removeCable(cableId: string) {
+    setCables((current) => current.filter((cable) => cable.id !== cableId));
+  }
+
+  function saveMmd() {
+    const mmd = buildSizingMermaid(drawingName, nodes, cables);
+    const blob = new Blob([mmd], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    const safeName = (drawingName || "sizing").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+    link.href = url;
+    link.download = `${safeName || "sizing"}.mmd`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  function saveDrawingPdf() {
+    const generatedAt = new Date();
+    const generatedAtText = generatedAt.toLocaleString(locale);
+    const doc = new jsPDF({ unit: "pt", format: "a4" });
+    const totalLoadW = getTotalLoadW(nodes);
+    const totalLoadKw = totalLoadW / 1000;
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.text(`${t("sizingDiagramTitle")}: ${drawingName}`, 40, 50);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(11);
+    doc.text(`${t("reportDate")}: ${generatedAtText}`, 40, 75);
+    doc.text(`${t("sizingTotalLoadW")}: ${totalLoadW.toFixed(1)} W`, 40, 95);
+    doc.text(`${t("loadKw")}: ${totalLoadKw.toFixed(3)}`, 40, 115);
+    doc.text(`${t("backupHours")}: ${backupHours}`, 40, 135);
+    doc.text(`${t("temperatureC")}: ${temperature}`, 40, 155);
+
+    let y = 185;
+    doc.setFont("helvetica", "bold");
+    doc.text(t("sizingNodes"), 40, y);
+    y += 18;
+    doc.setFont("helvetica", "normal");
+    if (nodes.length === 0) {
+      doc.text("-", 40, y);
+      y += 16;
+    } else {
+      nodes.forEach((node) => {
+        doc.text(`- ${node.label}: ${node.loadW} W`, 40, y);
+        y += 16;
+      });
+    }
+
+    y += 8;
+    doc.setFont("helvetica", "bold");
+    doc.text(t("sizingCables"), 40, y);
+    y += 18;
+    doc.setFont("helvetica", "normal");
+    if (cables.length === 0) {
+      doc.text("-", 40, y);
+      y += 16;
+    } else {
+      cables.forEach((cable) => {
+        const fromLabel = nodes.find((n) => n.id === cable.fromNodeId)?.label ?? cable.fromNodeId;
+        const toLabel = nodes.find((n) => n.id === cable.toNodeId)?.label ?? cable.toNodeId;
+        const cableText = `${fromLabel} -> ${toLabel} (${cable.lengthM} m, ${cable.areaMm2} mm²${cable.label ? `, ${cable.label}` : ""})`;
+        const lines = doc.splitTextToSize(`- ${cableText}`, 515);
+        doc.text(lines, 40, y);
+        y += lines.length * 14;
+      });
+    }
+
+    if (result) {
+      y += 10;
+      doc.setFont("helvetica", "bold");
+      doc.text(t("sizingRecommendation"), 40, y);
+      y += 18;
+      doc.setFont("helvetica", "normal");
+      doc.text(`recommendedModelSku: ${result.recommendedModelSku}`, 40, y);
+      y += 16;
+      doc.text(`batteryCapacityAh: ${result.batteryCapacityAh}`, 40, y);
+      y += 16;
+      doc.text(`safetyMargin: ${result.safetyMargin}`, 40, y);
+    }
+
+    const fileDate = generatedAt.toISOString().slice(0, 10);
+    doc.save(`sizing-diagram-${fileDate}.pdf`);
   }
 
   function savePdf() {
@@ -431,8 +614,153 @@ function SizingTool() {
           </pre>
         )}
       </div>
+
+      <div className="card p-4 space-y-4 mt-6">
+        <h3 className="text-lg font-semibold text-millet-text">{t("sizingDiagramTitle")}</h3>
+        <p className="text-sm text-millet-muted">{t("sizingDiagramSubtitle")}</p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <Field label={t("sizingProjectName")}>
+            <input className="input" value={drawingName} onChange={(e) => setDrawingName(e.target.value)} />
+          </Field>
+          <Field label={t("backupHours")}>
+            <input className="input" value={backupHours} onChange={(e) => setBackupHours(e.target.value)} />
+          </Field>
+          <Field label={t("temperatureC")}>
+            <input className="input" value={temperature} onChange={(e) => setTemperature(e.target.value)} />
+          </Field>
+        </div>
+
+        <div className="rounded-xl border border-millet-border p-3 space-y-3">
+          <div className="font-medium text-millet-text">{t("sizingAddNode")}</div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <Field label={t("sizingNodeName")}>
+              <input className="input" value={nodeName} onChange={(e) => setNodeName(e.target.value)} />
+            </Field>
+            <Field label={t("sizingNodeLoadW")}>
+              <input className="input" value={nodeLoadW} onChange={(e) => setNodeLoadW(e.target.value)} />
+            </Field>
+            <div className="flex items-end">
+              <button type="button" onClick={addNode} className="btn btn-ghost w-full">{t("create")}</button>
+            </div>
+          </div>
+
+          <CardTable
+            headers={[t("sizingNodeName"), t("sizingNodeLoadW"), t("action")]}
+            rows={nodes.map((node) => [
+              node.label,
+              `${node.loadW} W`,
+              <button key={node.id} type="button" className="btn btn-ghost text-xs px-2 py-1" onClick={() => removeNode(node.id)}>{t("remove")}</button>
+            ])}
+          />
+        </div>
+
+        <div className="rounded-xl border border-millet-border p-3 space-y-3">
+          <div className="font-medium text-millet-text">{t("sizingAddCable")}</div>
+          <div className="grid grid-cols-1 sm:grid-cols-6 gap-3">
+            <Field label={t("sizingCableFrom")}>
+              <select className="input" value={cableFrom} onChange={(e) => setCableFrom(e.target.value)}>
+                <option value="">-</option>
+                {nodes.map((node) => <option key={node.id} value={node.id}>{node.label}</option>)}
+              </select>
+            </Field>
+            <Field label={t("sizingCableTo")}>
+              <select className="input" value={cableTo} onChange={(e) => setCableTo(e.target.value)}>
+                <option value="">-</option>
+                {nodes.map((node) => <option key={node.id} value={node.id}>{node.label}</option>)}
+              </select>
+            </Field>
+            <Field label={t("sizingCableLengthM")}>
+              <input className="input" value={cableLengthM} onChange={(e) => setCableLengthM(e.target.value)} />
+            </Field>
+            <Field label={t("sizingCableAreaMm2")}>
+              <input className="input" value={cableAreaMm2} onChange={(e) => setCableAreaMm2(e.target.value)} />
+            </Field>
+            <Field label={t("notes")}>
+              <input className="input" value={cableLabel} onChange={(e) => setCableLabel(e.target.value)} />
+            </Field>
+            <div className="flex items-end">
+              <button type="button" onClick={addCable} className="btn btn-ghost w-full">{t("create")}</button>
+            </div>
+          </div>
+
+          <CardTable
+            headers={[t("sizingCableFrom"), t("sizingCableTo"), t("sizingCableLengthM"), t("sizingCableAreaMm2"), t("notes"), t("action")]}
+            rows={cables.map((cable) => [
+              nodes.find((n) => n.id === cable.fromNodeId)?.label ?? cable.fromNodeId,
+              nodes.find((n) => n.id === cable.toNodeId)?.label ?? cable.toNodeId,
+              `${cable.lengthM} m`,
+              `${cable.areaMm2} mm²`,
+              cable.label ?? "-",
+              <button key={cable.id} type="button" className="btn btn-ghost text-xs px-2 py-1" onClick={() => removeCable(cable.id)}>{t("remove")}</button>
+            ])}
+          />
+        </div>
+
+        <div className="rounded-xl border border-millet-border bg-millet-surface p-3 text-sm text-millet-text">
+          <div>{t("sizingTotalLoadW")}: <strong>{getTotalLoadW(nodes).toFixed(1)} W</strong></div>
+          <div>{t("loadKw")}: <strong>{(getTotalLoadW(nodes) / 1000).toFixed(3)}</strong></div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <button type="button" onClick={submitFromDrawing} className="btn btn-primary">{t("calculate")}</button>
+          <button type="button" onClick={saveDrawingPdf} className="btn btn-ghost">{t("savePdf")}</button>
+          <button type="button" onClick={saveMmd} className="btn btn-ghost">{t("saveMmd")}</button>
+        </div>
+
+        <div className="rounded-xl border border-millet-border bg-white p-3">
+          <div className="text-sm font-medium text-millet-text mb-2">Mermaid (.mmd)</div>
+          <pre className="text-xs rounded-lg border border-millet-border bg-millet-surface p-3 overflow-auto text-millet-text">
+            {buildSizingMermaid(drawingName, nodes, cables)}
+          </pre>
+        </div>
+      </div>
     </Page>
   );
+}
+
+function getTotalLoadW(nodes: SizingNode[]) {
+  return nodes.reduce((sum, node) => sum + (Number.isFinite(node.loadW) ? node.loadW : 0), 0);
+}
+
+function toMermaidId(nodeId: string) {
+  return `N_${nodeId.replace(/[^a-zA-Z0-9_]/g, "_")}`;
+}
+
+function escapeMermaidText(text: string) {
+  return text.replace(/"/g, "'");
+}
+
+function buildSizingMermaid(name: string, nodes: SizingNode[], cables: SizingCable[]) {
+  const lines: string[] = [
+    "flowchart LR",
+    `  %% ${escapeMermaidText(name || "Sizing")}`
+  ];
+
+  if (nodes.length === 0) {
+    lines.push("  A[\"Battery backup\"]");
+    return lines.join("\n");
+  }
+
+  nodes.forEach((node) => {
+    lines.push(`  ${toMermaidId(node.id)}[\"${escapeMermaidText(node.label)}\\n${node.loadW} W\"]`);
+  });
+
+  if (cables.length === 0) {
+    for (let i = 0; i < nodes.length - 1; i++) {
+      lines.push(`  ${toMermaidId(nodes[i].id)} --> ${toMermaidId(nodes[i + 1].id)}`);
+    }
+    return lines.join("\n");
+  }
+
+  cables.forEach((cable) => {
+    const fromId = toMermaidId(cable.fromNodeId);
+    const toId = toMermaidId(cable.toNodeId);
+    const edgeLabel = `${cable.lengthM} m, ${cable.areaMm2} mm²${cable.label ? `, ${escapeMermaidText(cable.label)}` : ""}`;
+    lines.push(`  ${fromId} -->|\"${edgeLabel}\"| ${toId}`);
+  });
+
+  return lines.join("\n");
 }
 
 function Page({ title, subtitle, children }: { title: string; subtitle: string; children: ReactNode }) {
