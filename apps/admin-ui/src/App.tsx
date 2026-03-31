@@ -362,20 +362,20 @@ function ServiceHistory() {
 
 function SizingTool() {
   const { t, locale } = useI18n();
-  const [load, setLoad] = useState("1.5");
-  const [backupHours, setBackupHours] = useState("4");
+  const [load, setLoad] = useState("0.12");
+  const [backupHours, setBackupHours] = useState("8");
   const [temperature, setTemperature] = useState("20");
   const [result, setResult] = useState<SizingResult | null>(null);
   const [err, setErr] = useState<string | null>(null);
-  const [drawingName, setDrawingName] = useState("Passagesystem");
-  const [nodeName, setNodeName] = useState("Node");
-  const [nodeLoadW, setNodeLoadW] = useState("120");
+  const [drawingName, setDrawingName] = useState("Passagesystem 24V");
+  const [nodeName, setNodeName] = useState("UC-50");
+  const [nodeLoadW, setNodeLoadW] = useState("12");
   const [nodes, setNodes] = useState<SizingNode[]>([]);
   const [cables, setCables] = useState<SizingCable[]>([]);
   const [cableFrom, setCableFrom] = useState("");
   const [cableTo, setCableTo] = useState("");
-  const [cableLengthM, setCableLengthM] = useState("10");
-  const [cableAreaMm2, setCableAreaMm2] = useState("1");
+  const [cableLengthM, setCableLengthM] = useState("25");
+  const [cableAreaMm2, setCableAreaMm2] = useState("1.5");
   const [cableLabel, setCableLabel] = useState("");
 
   async function submit() {
